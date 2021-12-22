@@ -6,4 +6,3 @@
 [![Go Reference](https://pkg.go.dev/badge/go.atomizer.io/stream.svg)](https://pkg.go.dev/go.atomizer.io/stream)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-
