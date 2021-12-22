@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"constraints"
 	"context"
 	"testing"
 
@@ -139,7 +140,7 @@ func FanInTest[U ~[]T, T comparable](
 }
 
 func Test_FanIn(t *testing.T) {
-	FanInTest(t, "int8", IntTests[int8](1, 10))
+	FanInTest(t, "int8", IntTests[int8](100, 1000))
 	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
 	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
 	FanInTest(t, "uint16", IntTests[uint16](100, 1000))
@@ -149,6 +150,61 @@ func Test_FanIn(t *testing.T) {
 	FanInTest(t, "uint64", IntTests[uint64](100, 1000))
 	FanInTest(t, "float32", FloatTests[float32](100, 1000))
 	FanInTest(t, "float64", FloatTests[float64](100, 1000))
+}
+
+func InterceptTest[U ~[]T, T constraints.Signed](
+	t *testing.T,
+	name string,
+	data []U,
+) {
+	Tst(
+		t,
+		name,
+		data,
+		func(t *testing.T, data []T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			in := make(chan T)
+
+			out := Intercept(ctx, in, func(v T) (T, bool) {
+				return v % 3, true
+			})
+
+			go func() {
+				for _, v := range data {
+					select {
+					case <-ctx.Done():
+						return
+					case in <- v:
+					}
+				}
+			}()
+
+			for i := 0; i < len(data); i++ {
+				select {
+				case <-ctx.Done():
+					t.Error("context cancelled")
+					return
+				case out, ok := <-out:
+					if !ok {
+						if i != len(data)-1 {
+							t.Fatal("c2 closed prematurely")
+						}
+					}
+
+					if out != data[i]%3 {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+				}
+			}
+		})
+}
+func Test_Intercept(t *testing.T) {
+	InterceptTest(t, "int8", IntTests[int8](100, 1000))
+	InterceptTest(t, "int8", IntTests[int8](100, 1000))
+	InterceptTest(t, "int32", IntTests[int32](100, 1000))
+	InterceptTest(t, "int64", IntTests[int64](100, 1000))
 }
 
 // func (test *Test[any]) Run(t *testing.T) {
