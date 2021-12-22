@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1640216563629,
+  "lastUpdate": 1640216730392,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -96,6 +96,54 @@ window.BENCHMARK_DATA = {
             "value": 1123,
             "unit": "ns/op",
             "extra": "1000000 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "0c71941d4f3c2925ec09bb10e41db6e5a57bd825",
+          "message": "Correcting import path",
+          "timestamp": "2021-12-22T18:44:49-05:00",
+          "tree_id": "5485a5719ea650c315e045ee24702b14baddd7ea",
+          "url": "https://github.com/devnw/stream/commit/0c71941d4f3c2925ec09bb10e41db6e5a57bd825"
+        },
+        "date": 1640216729545,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 419.8,
+            "unit": "ns/op",
+            "extra": "2784598 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 440.6,
+            "unit": "ns/op",
+            "extra": "2752506 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1534,
+            "unit": "ns/op",
+            "extra": "736579 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 962.8,
+            "unit": "ns/op",
+            "extra": "1351826 times\n2 procs"
           }
         ]
       }
