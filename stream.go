@@ -60,13 +60,18 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				return
 			}
 
-			for _, o := range out {
-				select {
-				case <-ctx.Done():
-					return
-				case o <- v:
+			// Closure to catch panic on closed channel write.
+			func() {
+				defer recover() // catch closed channel errors
+
+				for _, o := range out {
+					select {
+					case <-ctx.Done():
+						return
+					case o <- v:
+					}
 				}
-			}
+			}()
 		}
 
 	}
