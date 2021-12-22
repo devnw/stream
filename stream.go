@@ -27,6 +27,12 @@ func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
 // are closed is important to ensure that the goroutine is terminated.
 func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 	out := make(chan T)
+	defer func() {
+		go func() {
+			<-ctx.Done()
+			close(out)
+		}()
+	}()
 
 	for _, i := range in {
 		// Pipe the result of the channel to the output channel.

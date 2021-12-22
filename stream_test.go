@@ -80,7 +80,13 @@ func FanInTest[U ~[]T, T comparable](
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			out := make([]chan T, 5)
+			divisor := 5
+
+			if len(data)%divisor != 0 {
+				t.Fatalf("data length must be divisible by %v", divisor)
+			}
+
+			out := make([]chan T, divisor)
 
 			// Initialize channels
 			for i := range out {
@@ -90,9 +96,11 @@ func FanInTest[U ~[]T, T comparable](
 			fan := FanIn(ctx, ReadOnly(out...)...)
 
 			ichan := 0
-			for i := 0; i < len(data); i += len(data) / 5 {
-
+			cursor := 0
+			for i := len(data) / divisor; i <= len(data); i += len(data) / divisor {
 				go func(out chan<- T, data []T) {
+					defer close(out)
+
 					for _, v := range data {
 						select {
 						case <-ctx.Done():
@@ -100,8 +108,9 @@ func FanInTest[U ~[]T, T comparable](
 						case out <- v:
 						}
 					}
-				}(out[ichan], data[:i])
+				}(out[ichan], data[cursor:i])
 
+				cursor = i
 				ichan++
 			}
 
@@ -130,7 +139,7 @@ func FanInTest[U ~[]T, T comparable](
 }
 
 func Test_FanIn(t *testing.T) {
-	FanInTest(t, "int8", IntTests[int8](100, 1000))
+	FanInTest(t, "int8", IntTests[int8](1, 10))
 	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
 	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
 	FanInTest(t, "uint16", IntTests[uint16](100, 1000))
