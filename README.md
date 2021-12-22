@@ -15,7 +15,7 @@ design patterns in Go.
 To install the package, run:
 
 ```bash
-    go get -u github.com/devnw/stream@latest
+    go get -u go.atomizer.io/stream@latest
 ```
 
 ## Importing
