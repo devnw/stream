@@ -8,30 +8,30 @@ import (
 func PipeTest[U ~[]T, T any](
 	t *testing.T,
 	name string,
-	data map[string][]U,
+	data []U,
 ) {
 	Tst(
 		t,
 		name,
 		data,
-		func(t *testing.T, testdata []U) {
-			for _, v := range testdata {
-
-				for _, v2 := range v {
-					fmt.Printf("%v-%v", v, v2)
-				}
+		func(t *testing.T, data []T) {
+			for _, v2 := range data {
+				fmt.Printf("%v\n", v2)
 			}
 		})
 }
 
 func Test_Pipe(t *testing.T) {
-	PipeTest(
-		t,
-		"int",
-		map[string][][]int{
-			"rand1": IntTests[int](100, 1000),
-		},
-	)
+	PipeTest(t, "int8", IntTests[int8](100, 1000))
+	PipeTest(t, "uint8", IntTests[uint8](100, 1000))
+	PipeTest(t, "uint8", IntTests[uint8](100, 1000))
+	PipeTest(t, "uint16", IntTests[uint16](100, 1000))
+	PipeTest(t, "int32", IntTests[int32](100, 1000))
+	PipeTest(t, "uint32", IntTests[uint32](100, 1000))
+	PipeTest(t, "int64", IntTests[int64](100, 1000))
+	PipeTest(t, "uint64", IntTests[uint64](100, 1000))
+	PipeTest(t, "float32", FloatTests[float32](100, 1000))
+	PipeTest(t, "float64", FloatTests[float64](100, 1000))
 }
 
 // func (test *Test[any]) Run(t *testing.T) {
