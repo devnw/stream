@@ -1,11 +1,11 @@
 package stream
 
 import (
-	"fmt"
+	"context"
 	"testing"
 )
 
-func PipeTest[U ~[]T, T any](
+func PipeTest[U ~[]T, T comparable](
 	t *testing.T,
 	name string,
 	data []U,
@@ -15,8 +15,39 @@ func PipeTest[U ~[]T, T any](
 		name,
 		data,
 		func(t *testing.T, data []T) {
-			for _, v2 := range data {
-				fmt.Printf("%v\n", v2)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			c1, c2 := make(chan T), make(chan T)
+
+			go Pipe(ctx, c1, c2)
+
+			go func() {
+				for _, v := range data {
+					select {
+					case <-ctx.Done():
+						return
+					case c1 <- v:
+					}
+				}
+			}()
+
+			for i := 0; i < len(data); i++ {
+				select {
+				case <-ctx.Done():
+					t.Error("context cancelled")
+					return
+				case out, ok := <-c2:
+					if !ok {
+						if i != len(data)-1 {
+							t.Fatal("c2 closed prematurely")
+						}
+					}
+
+					if out != data[i] {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+				}
 			}
 		})
 }
