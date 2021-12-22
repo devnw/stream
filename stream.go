@@ -19,6 +19,54 @@ func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
 	FanOut(ctx, in, out)
 }
 
+// Intercept accepts an incoming data channel and a function literal that
+// accepts the incoming data and returns data of the same type and a boolean
+// indicating whether the data should be forwarded to the output channel.
+// The function is executed for each data item in the incoming channel as long
+// as the context is not cancelled or the incoming channel remains open.
+func Intercept[T any](ctx context.Context, in <-chan T, fn func(in T) (T, bool)) <-chan T {
+	out := make(chan T)
+
+	go func() {
+		defer recover() // catch closed channel errors
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+
+				// Executing this in a function literal ensures that any panic
+				// will be caught during execution of the function
+				func() {
+					// TODO: Should something happen with this panic data?
+					defer recover() // catch panic
+
+					// Determine if the function was successful
+					result, ok := fn(v)
+					if !ok {
+						return
+					}
+
+					// Execute the function against the incoming value
+					// and send the result to the output channel.
+					select {
+					case <-ctx.Done():
+						return
+					case out <- result:
+					}
+				}()
+			}
+		}
+	}()
+
+	return out
+}
+
 // FanIn accepts incoming data channels and forwards returns a single channel
 // that receives all the data from the supplied channels.
 //
