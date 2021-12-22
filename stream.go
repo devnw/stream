@@ -45,10 +45,6 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 	defer func() {
 		defer recover() // catch closed channel errors
-
-		for _, c := range out {
-			close(c)
-		}
 	}()
 
 	for {

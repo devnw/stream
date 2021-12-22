@@ -3,6 +3,8 @@ package stream
 import (
 	"context"
 	"testing"
+
+	. "go.structs.dev/gen"
 )
 
 func PipeTest[U ~[]T, T comparable](
@@ -63,6 +65,81 @@ func Test_Pipe(t *testing.T) {
 	PipeTest(t, "uint64", IntTests[uint64](100, 1000))
 	PipeTest(t, "float32", FloatTests[float32](100, 1000))
 	PipeTest(t, "float64", FloatTests[float64](100, 1000))
+}
+
+func FanInTest[U ~[]T, T comparable](
+	t *testing.T,
+	name string,
+	data []U,
+) {
+	Tst(
+		t,
+		name,
+		data,
+		func(t *testing.T, data []T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			out := make([]chan T, 5)
+
+			// Initialize channels
+			for i := range out {
+				out[i] = make(chan T)
+			}
+
+			fan := FanIn(ctx, ReadOnly(out...)...)
+
+			ichan := 0
+			for i := 0; i < len(data); i += len(data) / 5 {
+
+				go func(out chan<- T, data []T) {
+					for _, v := range data {
+						select {
+						case <-ctx.Done():
+							return
+						case out <- v:
+						}
+					}
+				}(out[ichan], data[:i])
+
+				ichan++
+			}
+
+			returned := make([]T, len(data))
+			for i := 0; i < len(data); i++ {
+				select {
+				case <-ctx.Done():
+					t.Error("context cancelled")
+					return
+				case out, ok := <-fan:
+					if !ok {
+						if i != len(data)-1 {
+							t.Fatal("c2 closed prematurely")
+						}
+					}
+
+					returned[i] = out
+				}
+			}
+
+			diff := Diff(data, returned)
+			if len(diff) != 0 {
+				t.Errorf("unexpected diff: %v", diff)
+			}
+		})
+}
+
+func Test_FanIn(t *testing.T) {
+	FanInTest(t, "int8", IntTests[int8](100, 1000))
+	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
+	FanInTest(t, "uint8", IntTests[uint8](100, 1000))
+	FanInTest(t, "uint16", IntTests[uint16](100, 1000))
+	FanInTest(t, "int32", IntTests[int32](100, 1000))
+	FanInTest(t, "uint32", IntTests[uint32](100, 1000))
+	FanInTest(t, "int64", IntTests[int64](100, 1000))
+	FanInTest(t, "uint64", IntTests[uint64](100, 1000))
+	FanInTest(t, "float32", FloatTests[float32](100, 1000))
+	FanInTest(t, "float64", FloatTests[float64](100, 1000))
 }
 
 // func (test *Test[any]) Run(t *testing.T) {
