@@ -30,6 +30,10 @@ name.
 
 ## Documentation
 
+### TYPES
+
+**`type InterceptFunc[T, U any] func(context.Context, T) (U, bool)`**
+
 ### FUNCTIONS
 
 **`func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T`**
@@ -46,7 +50,8 @@ name.
     desired. Cancelling the context or closing the incoming channel is important
     to ensure that the goroutine is properly terminated.
 
-**`func Intercept[T any](ctx context.Context, in <-chan T, fn func(in T) (T, bool)) <-chan T`**
+**`func Intercept[T, U any](ctx context.Context,in <-chan T,fn InterceptFunc[T,
+U]) <-chan U`**
 >Intercept accepts an incoming data channel and a function literal that
     accepts the incoming data and returns data of the same type and a boolean
     indicating whether the data should be forwarded to the output channel. The
@@ -59,6 +64,10 @@ name.
 >**NOTE:** Execute the Pipe function in a goroutine if parallel execution is
     desired. Cancelling the context or closing the incoming channel is important
     to ensure that the goroutine is properly terminated.
+
+**`func ToStream[U ~[]T, T any](ctx context.Context, in U) <-chan T`**
+>ToStream accepts an slice of values and converts them to a channel.
+>**NOTE:** This function does NOT use a buffered channel.
 
 ## Benchmarks
 

@@ -38,7 +38,7 @@ func Benchmark_Intercept(b *testing.B) {
 	in := make(chan int)
 	value := 10
 
-	out := Intercept(ctx, in, func(v int) (int, bool) {
+	out := Intercept(ctx, in, func(_ context.Context, v int) (int, bool) {
 		return v % 3, true
 	})
 

@@ -9,6 +9,69 @@ import (
 	. "go.structs.dev/gen"
 )
 
+func ToStreamTest[U ~[]T, T comparable](
+	t *testing.T,
+	name string,
+	data []U,
+) {
+	Tst(
+		t,
+		name,
+		data,
+		func(t *testing.T, data []T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			out := ToStream(ctx, data)
+
+			for i := 0; ; i++ {
+				select {
+				case <-ctx.Done():
+					t.Error("context cancelled")
+					return
+				case out, ok := <-out:
+					if !ok {
+						if i != len(data) {
+							t.Fatalf("closed prematurely, expected %v, got %v", len(data)-1, i)
+						}
+
+						return
+					}
+
+					if out != data[i] {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+				}
+			}
+		})
+}
+
+func Test_ToStream(t *testing.T) {
+	ToStreamTest(t, "int8", IntTests[int8](100, 1000))
+	ToStreamTest(t, "uint8", IntTests[uint8](100, 1000))
+	ToStreamTest(t, "uint8", IntTests[uint8](100, 1000))
+	ToStreamTest(t, "uint16", IntTests[uint16](100, 1000))
+	ToStreamTest(t, "int32", IntTests[int32](100, 1000))
+	ToStreamTest(t, "uint32", IntTests[uint32](100, 1000))
+	ToStreamTest(t, "int64", IntTests[int64](100, 1000))
+	ToStreamTest(t, "uint64", IntTests[uint64](100, 1000))
+	ToStreamTest(t, "float32", FloatTests[float32](100, 1000))
+	ToStreamTest(t, "float64", FloatTests[float64](100, 1000))
+}
+
+func Test_ToStream_CtxCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	out := ToStream(ctx, []int{1, 2, 3})
+
+	select {
+	case <-time.After(time.Second):
+		t.Error("context cancelled")
+	case <-out:
+	}
+}
+
 func PipeTest[U ~[]T, T comparable](
 	t *testing.T,
 	name string,
@@ -46,6 +109,7 @@ func PipeTest[U ~[]T, T comparable](
 						if i != len(data)-1 {
 							t.Fatal("c2 closed prematurely")
 						}
+						return
 					}
 
 					if out != data[i] {
@@ -169,8 +233,8 @@ func InterceptTest[U ~[]T, T constraints.Signed](
 			in := make(chan T)
 			defer close(in)
 
-			out := Intercept(ctx, in, func(v T) (T, bool) {
-				return v % 3, true
+			out := Intercept(ctx, in, func(_ context.Context, in T) (T, bool) {
+				return in % 3, true
 			})
 
 			go func() {
@@ -209,6 +273,40 @@ func Test_Intercept(t *testing.T) {
 	InterceptTest(t, "int64", IntTests[int64](100, 1000))
 }
 
+func Test_Intercept_ChangeType(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	integers := Ints[int](100)
+	booleans := make([]bool, len(integers))
+
+	for i, v := range integers {
+		booleans[i] = v%2 == 0
+	}
+
+	out := Intercept(
+		ctx,
+		ToStream(ctx, integers),
+		func(_ context.Context, in int) (bool, bool) {
+			return in%2 == 0, true
+		})
+
+	for i := 0; ; i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case out, ok := <-out:
+			if !ok {
+				return
+			}
+
+			if out != booleans[i] {
+				t.Errorf("expected %v, got %v", booleans[0], out)
+			}
+		}
+	}
+}
+
 func Test_Intercept_NotOk(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -230,7 +328,7 @@ func Test_Intercept_NotOk(t *testing.T) {
 		in <- 0
 	}()
 
-	out := Intercept(ctx, in, func(v int) (int, bool) {
+	out := Intercept(ctx, in, func(_ context.Context, v int) (int, bool) {
 		if v == 0 {
 			return 0, true
 		}
@@ -265,7 +363,12 @@ func Test_Intercept_ClosedChan(t *testing.T) {
 
 	in := make(chan int)
 
-	out := Intercept(ctx, in, func(v int) (int, bool) { return v, false })
+	out := Intercept(
+		ctx,
+		in,
+		func(_ context.Context, v int) (int, bool) {
+			return v, false
+		})
 
 	close(in)
 
@@ -287,7 +390,9 @@ func Test_Intercept_Cancelled_On_Wait(t *testing.T) {
 	defer close(in)
 
 	// Setup intercept
-	out := Intercept(ctx, in, func(v int) (int, bool) { return v, true })
+	out := Intercept(ctx, in, func(_ context.Context, v int) (int, bool) {
+		return v, true
+	})
 
 	// Push to in
 	in <- 1

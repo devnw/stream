@@ -14,6 +14,27 @@ import (
 	"context"
 )
 
+// ToStream accepts an slice of values and converts them to a channel.
+//
+// NOTE: This function does NOT use a buffered channel.
+func ToStream[U ~[]T, T any](ctx context.Context, in U) <-chan T {
+	out := make(chan T)
+
+	go func(out chan<- T) {
+		defer close(out)
+
+		for _, v := range in {
+			select {
+			case <-ctx.Done():
+				return
+			case out <- v:
+			}
+		}
+	}(out)
+
+	return out
+}
+
 // Pipe accepts an incoming data channel and pipes it to the supplied
 // outgoing data channel.
 //
@@ -26,13 +47,19 @@ func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
 	FanOut(ctx, in, out)
 }
 
+type InterceptFunc[T, U any] func(context.Context, T) (U, bool)
+
 // Intercept accepts an incoming data channel and a function literal that
 // accepts the incoming data and returns data of the same type and a boolean
 // indicating whether the data should be forwarded to the output channel.
 // The function is executed for each data item in the incoming channel as long
 // as the context is not cancelled or the incoming channel remains open.
-func Intercept[T any](ctx context.Context, in <-chan T, fn func(in T) (T, bool)) <-chan T {
-	out := make(chan T)
+func Intercept[T, U any](
+	ctx context.Context,
+	in <-chan T,
+	fn InterceptFunc[T, U],
+) <-chan U {
+	out := make(chan U)
 
 	go func() {
 		defer recover() // catch closed channel errors
@@ -54,7 +81,7 @@ func Intercept[T any](ctx context.Context, in <-chan T, fn func(in T) (T, bool))
 					defer recover() // catch panic
 
 					// Determine if the function was successful
-					result, ok := fn(v)
+					result, ok := fn(ctx, v)
 					if !ok {
 						return
 					}
