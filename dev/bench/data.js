@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1640216730392,
+  "lastUpdate": 1642203768456,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -144,6 +144,54 @@ window.BENCHMARK_DATA = {
             "value": 962.8,
             "unit": "ns/op",
             "extra": "1351826 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "e20cff9fffde25b362a6163ae42f0d1d56e6cdcf",
+          "message": "Adding intercept func that allows two types and adding ToStream",
+          "timestamp": "2022-01-14T18:42:04-05:00",
+          "tree_id": "81f906138bb3493f8a871d82ead87aa4619ed562",
+          "url": "https://github.com/devnw/stream/commit/e20cff9fffde25b362a6163ae42f0d1d56e6cdcf"
+        },
+        "date": 1642203767951,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 590.8,
+            "unit": "ns/op",
+            "extra": "2014465 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 586,
+            "unit": "ns/op",
+            "extra": "2029324 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 2126,
+            "unit": "ns/op",
+            "extra": "592860 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 1175,
+            "unit": "ns/op",
+            "extra": "1000000 times\n2 procs"
           }
         ]
       }
