@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1642213084073,
+  "lastUpdate": 1642213684811,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -252,6 +252,66 @@ window.BENCHMARK_DATA = {
             "value": 4691,
             "unit": "ns/op",
             "extra": "224012 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "ae0cbca0e2559f9656911e0ef84218970d8e1fe8",
+          "message": "Adding total check for distribute tests",
+          "timestamp": "2022-01-14T21:27:16-05:00",
+          "tree_id": "aec710b895549cf53bc34d9118bac0f3b1bdc30d",
+          "url": "https://github.com/devnw/stream/commit/ae0cbca0e2559f9656911e0ef84218970d8e1fe8"
+        },
+        "date": 1642213684261,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 589.4,
+            "unit": "ns/op",
+            "extra": "2069966 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 589.7,
+            "unit": "ns/op",
+            "extra": "1995760 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 2038,
+            "unit": "ns/op",
+            "extra": "592593 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 1173,
+            "unit": "ns/op",
+            "extra": "964540 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 2608,
+            "unit": "ns/op",
+            "extra": "479264 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_ToStream",
+            "value": 5032,
+            "unit": "ns/op",
+            "extra": "238417 times\n2 procs"
           }
         ]
       }
