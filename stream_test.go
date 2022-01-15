@@ -484,6 +484,15 @@ func DistributeTest[U ~[]T, T comparable](
 					c3total++
 				}
 			}
+
+			t.Logf("c1: %v", c1total)
+			t.Logf("c2: %v", c2total)
+			t.Logf("c3: %v", c3total)
+
+			ctotal := c1total + c2total + c3total
+			if ctotal != len(data) {
+				t.Errorf("expected %v, got %v", len(data), ctotal)
+			}
 		})
 }
 
