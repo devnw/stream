@@ -97,3 +97,35 @@ func Benchmark_FanOut(b *testing.B) {
 		<-out2
 	}
 }
+
+func Benchmark_Distribute(b *testing.B) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	in, out1, out2 := make(chan int), make(chan int), make(chan int)
+
+	go Distribute(ctx, in, out1, out2)
+
+	for n := 0; n < b.N; n++ {
+		in <- 1
+
+		select {
+		case <-out1:
+		case <-out2:
+		}
+	}
+}
+
+func Benchmark_ToStream(b *testing.B) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+	for n := 0; n < b.N; n++ {
+		out := ToStream(ctx, data)
+		for i := 0; i < len(data); i++ {
+			<-out
+		}
+	}
+}

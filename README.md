@@ -36,6 +36,14 @@ name.
 
 ### FUNCTIONS
 
+**`func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T)`**
+>Distribute accepts an incoming data channel and distributes the data among
+    the supplied outgoing data channels. This distribution is done
+    stochastically using the cryptographic random number generator.
+>**NOTE:** Execute the Distribute function in a goroutine if parallel execution
+    is desired. Cancelling the context or closing the incoming channel is
+    important to ensure that the goroutine is properly terminated.
+
 **`func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T`**
 >FanIn accepts incoming data channels and forwards returns a single channel
     that receives all the data from the supplied channels.

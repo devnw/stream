@@ -12,6 +12,8 @@ package stream
 
 import (
 	"context"
+	"crypto/rand"
+	"math/big"
 )
 
 // ToStream accepts an slice of values and converts them to a channel.
@@ -109,6 +111,12 @@ func Intercept[T, U any](
 // are closed is important to ensure that the goroutine is terminated.
 func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 	out := make(chan T)
+
+	if len(in) == 0 {
+		defer close(out)
+		return out
+	}
+
 	defer func() {
 		go func() {
 			<-ctx.Done()
@@ -124,16 +132,18 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 	return out
 }
 
-// FanOut accepts an incoming data channel and forwards the data from it to
-// the supplied outgoing data channels.
+// FanOut accepts an incoming data channel and copies the data to each of the
+// supplied outgoing data channels.
 //
 // NOTE: Execute the FanOut function in a goroutine if parallel execution is
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
-	defer func() {
-		defer recover() // catch closed channel errors
-	}()
+	defer recover() // catch closed channel errors
+
+	if len(out) == 0 {
+		return
+	}
 
 	for {
 		select {
@@ -154,6 +164,52 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 						return
 					case o <- v:
 					}
+				}
+			}()
+		}
+
+	}
+}
+
+// Distribute accepts an incoming data channel and distributes the data among
+// the supplied outgoing data channels. This distribution is done stochastically
+// using the cryptographic random number generator.
+//
+// NOTE: Execute the Distribute function in a goroutine if parallel execution is
+// desired. Cancelling the context or closing the incoming channel is important
+// to ensure that the goroutine is properly terminated.
+func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
+	defer recover() // catch closed channel errors
+
+	if len(out) == 0 {
+		return
+	}
+
+	for {
+		// Generate a random number with good entropy to determine which
+		// channel the data should be sent to.
+		// TODO: Determine if this hinders performance too much and if so,
+		// switch to something like fastrand which is used in the runtime
+		// for the select statement.
+		r, _ := rand.Int(rand.Reader, big.NewInt(int64(len(out))))
+		index := int(r.Int64()) % len(out)
+
+		select {
+		case <-ctx.Done():
+			return
+		case v, ok := <-in:
+			if !ok {
+				return
+			}
+
+			// Closure to catch panic on closed channel write.
+			func() {
+				defer recover() // catch closed channel errors
+
+				select {
+				case <-ctx.Done():
+					return
+				case out[index] <- v:
 				}
 			}()
 		}

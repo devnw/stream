@@ -425,16 +425,130 @@ func Test_FanOut_Cancelled_On_Wait(t *testing.T) {
 	defer close(out)
 
 	go func() {
-
-		// Cancel the routine
 		defer cancel()
-
-		// Push to in
 		in <- 1
-		// Wait for intercept routine to be scheduled
-		time.Sleep(time.Millisecond)
 	}()
 
-	// Setup intercept
 	FanOut(ctx, in, out)
+}
+
+func DistributeTest[U ~[]T, T comparable](
+	t *testing.T,
+	name string,
+	data []U,
+) {
+	Tst(
+		t,
+		name,
+		data,
+		func(t *testing.T, data []T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			c1, c2, c3 := make(chan T), make(chan T), make(chan T)
+
+			go Distribute(ctx, ToStream(ctx, data), c1, c2, c3)
+
+			c1total, c2total, c3total := 0, 0, 0
+			for i := 0; i < len(data); i++ {
+				select {
+				case <-ctx.Done():
+					t.Error("context cancelled")
+					return
+				case out, ok := <-c1:
+					if !ok {
+						return
+					}
+
+					if out != data[i] {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+					c1total++
+				case out, ok := <-c2:
+					if !ok {
+						return
+					}
+
+					if out != data[i] {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+					c2total++
+				case out, ok := <-c3:
+					if !ok {
+						return
+					}
+
+					if out != data[i] {
+						t.Errorf("expected %v, got %v", data[i], out)
+					}
+					c3total++
+				}
+			}
+		})
+}
+
+func Test_Distribute(t *testing.T) {
+	DistributeTest(t, "int8", IntTests[int8](100, 1000))
+	DistributeTest(t, "uint8", IntTests[uint8](100, 1000))
+	DistributeTest(t, "uint8", IntTests[uint8](100, 1000))
+	DistributeTest(t, "uint16", IntTests[uint16](100, 1000))
+	DistributeTest(t, "int32", IntTests[int32](100, 1000))
+	DistributeTest(t, "uint32", IntTests[uint32](100, 1000))
+	DistributeTest(t, "int64", IntTests[int64](100, 1000))
+	DistributeTest(t, "uint64", IntTests[uint64](100, 1000))
+	DistributeTest(t, "float32", FloatTests[float32](100, 1000))
+	DistributeTest(t, "float64", FloatTests[float64](100, 1000))
+}
+
+func Test_Distribute_Cancelled_On_Wait(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	defer func() {
+		r := recover()
+		if r != nil {
+			t.Error("unexpected panic")
+		}
+	}()
+
+	in, out := make(chan int), make(chan int)
+	defer close(in)
+	defer close(out)
+
+	go func() {
+		defer cancel()
+		in <- 1
+	}()
+
+	Distribute(ctx, in, out)
+}
+
+func Test_Distribute_ZeroOut(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	in := make(chan int)
+	defer close(in)
+
+	Distribute(ctx, in)
+}
+
+func Test_FanOut_ZeroOut(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	in := make(chan int)
+	defer close(in)
+
+	FanOut(ctx, in)
+}
+
+func Test_FanIn_ZeroIn(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	in := make(chan int)
+	defer close(in)
+
+	FanIn[int](ctx)
 }
