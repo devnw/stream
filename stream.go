@@ -16,27 +16,6 @@ import (
 	"math/big"
 )
 
-// ToStream accepts an slice of values and converts them to a channel.
-//
-// NOTE: This function does NOT use a buffered channel.
-func ToStream[U ~[]T, T any](ctx context.Context, in U) <-chan T {
-	out := make(chan T)
-
-	go func(out chan<- T) {
-		defer close(out)
-
-		for _, v := range in {
-			select {
-			case <-ctx.Done():
-				return
-			case out <- v:
-			}
-		}
-	}(out)
-
-	return out
-}
-
 // Pipe accepts an incoming data channel and pipes it to the supplied
 // outgoing data channel.
 //
@@ -44,6 +23,7 @@ func ToStream[U ~[]T, T any](ctx context.Context, in U) <-chan T {
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
+	ctx, _ = _ctx(ctx)
 
 	// Pipe is just a fan-out of a single channel.
 	FanOut(ctx, in, out)
@@ -61,10 +41,11 @@ func Intercept[T, U any](
 	in <-chan T,
 	fn InterceptFunc[T, U],
 ) <-chan U {
+	ctx, _ = _ctx(ctx)
 	out := make(chan U)
 
 	go func() {
-		defer recover() // catch closed channel errors
+		defer recover()
 		defer close(out)
 
 		for {
@@ -80,7 +61,7 @@ func Intercept[T, U any](
 				// will be caught during execution of the function
 				func() {
 					// TODO: Should something happen with this panic data?
-					defer recover() // catch panic
+					defer recover()
 
 					// Determine if the function was successful
 					result, ok := fn(ctx, v)
@@ -110,6 +91,7 @@ func Intercept[T, U any](
 // so ensuring that the context is cancelled or the incoming channels
 // are closed is important to ensure that the goroutine is terminated.
 func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
+	ctx, _ = _ctx(ctx)
 	out := make(chan T)
 
 	if len(in) == 0 {
@@ -139,7 +121,7 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
-	defer recover() // catch closed channel errors
+	ctx, _ = _ctx(ctx)
 
 	if len(out) == 0 {
 		return
@@ -154,18 +136,18 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				return
 			}
 
-			// Closure to catch panic on closed channel write.
-			func() {
-				defer recover() // catch closed channel errors
-
-				for _, o := range out {
+			for _, o := range out {
+				// Closure to catch panic on closed channel write.
+				// Continue Loop
+				func() {
+					defer recover()
 					select {
 					case <-ctx.Done():
 						return
 					case o <- v:
 					}
-				}
-			}()
+				}()
+			}
 		}
 
 	}
@@ -179,7 +161,7 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
-	defer recover() // catch closed channel errors
+	ctx, _ = _ctx(ctx)
 
 	if len(out) == 0 {
 		return
@@ -204,7 +186,7 @@ func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 
 			// Closure to catch panic on closed channel write.
 			func() {
-				defer recover() // catch closed channel errors
+				defer recover()
 
 				select {
 				case <-ctx.Done():

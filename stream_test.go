@@ -9,69 +9,6 @@ import (
 	. "go.structs.dev/gen"
 )
 
-func ToStreamTest[U ~[]T, T comparable](
-	t *testing.T,
-	name string,
-	data []U,
-) {
-	Tst(
-		t,
-		name,
-		data,
-		func(t *testing.T, data []T) {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			out := ToStream(ctx, data)
-
-			for i := 0; ; i++ {
-				select {
-				case <-ctx.Done():
-					t.Error("context cancelled")
-					return
-				case out, ok := <-out:
-					if !ok {
-						if i != len(data) {
-							t.Fatalf("closed prematurely, expected %v, got %v", len(data)-1, i)
-						}
-
-						return
-					}
-
-					if out != data[i] {
-						t.Errorf("expected %v, got %v", data[i], out)
-					}
-				}
-			}
-		})
-}
-
-func Test_ToStream(t *testing.T) {
-	ToStreamTest(t, "int8", IntTests[int8](100, 1000))
-	ToStreamTest(t, "uint8", IntTests[uint8](100, 1000))
-	ToStreamTest(t, "uint8", IntTests[uint8](100, 1000))
-	ToStreamTest(t, "uint16", IntTests[uint16](100, 1000))
-	ToStreamTest(t, "int32", IntTests[int32](100, 1000))
-	ToStreamTest(t, "uint32", IntTests[uint32](100, 1000))
-	ToStreamTest(t, "int64", IntTests[int64](100, 1000))
-	ToStreamTest(t, "uint64", IntTests[uint64](100, 1000))
-	ToStreamTest(t, "float32", FloatTests[float32](100, 1000))
-	ToStreamTest(t, "float64", FloatTests[float64](100, 1000))
-}
-
-func Test_ToStream_CtxCancelled(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-
-	out := ToStream(ctx, []int{1, 2, 3})
-
-	select {
-	case <-time.After(time.Second):
-		t.Error("context cancelled")
-	case <-out:
-	}
-}
-
 func PipeTest[U ~[]T, T comparable](
 	t *testing.T,
 	name string,
@@ -286,7 +223,7 @@ func Test_Intercept_ChangeType(t *testing.T) {
 
 	out := Intercept(
 		ctx,
-		ToStream(ctx, integers),
+		Slice[int](integers).Chan(ctx),
 		func(_ context.Context, in int) (bool, bool) {
 			return in%2 == 0, true
 		})
@@ -310,13 +247,6 @@ func Test_Intercept_ChangeType(t *testing.T) {
 func Test_Intercept_NotOk(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	defer func() {
-		r := recover()
-		if r != nil {
-			t.Error("unexpected panic")
-		}
-	}()
 
 	in := make(chan int)
 	defer close(in)
@@ -354,13 +284,6 @@ func Test_Intercept_ClosedChan(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	defer func() {
-		r := recover()
-		if r != nil {
-			t.Error("unexpected panic")
-		}
-	}()
-
 	in := make(chan int)
 
 	out := Intercept(
@@ -378,13 +301,6 @@ func Test_Intercept_ClosedChan(t *testing.T) {
 func Test_Intercept_Cancelled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	defer func() {
-		r := recover()
-		if r != nil {
-			t.Error("unexpected panic")
-		}
-	}()
 
 	in := make(chan int)
 	defer close(in)
@@ -413,13 +329,6 @@ func Test_FanOut_Cancelled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	defer func() {
-		r := recover()
-		if r != nil {
-			t.Error("unexpected panic")
-		}
-	}()
-
 	in, out := make(chan int), make(chan int)
 	defer close(in)
 	defer close(out)
@@ -447,7 +356,7 @@ func DistributeTest[U ~[]T, T comparable](
 
 			c1, c2, c3 := make(chan T), make(chan T), make(chan T)
 
-			go Distribute(ctx, ToStream(ctx, data), c1, c2, c3)
+			go Distribute(ctx, Slice[T](data).Chan(ctx), c1, c2, c3)
 
 			c1total, c2total, c3total := 0, 0, 0
 			for i := 0; i < len(data); i++ {
@@ -512,14 +421,7 @@ func Test_Distribute(t *testing.T) {
 func Test_Distribute_Cancelled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	defer func() {
-		r := recover()
-		if r != nil {
-			t.Error("unexpected panic")
-		}
-	}()
-
+	
 	in, out := make(chan int), make(chan int)
 	defer close(in)
 	defer close(out)

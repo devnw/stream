@@ -3,6 +3,8 @@ package stream
 import (
 	"context"
 	"testing"
+
+	. "go.structs.dev/gen"
 )
 
 func Benchmark_Pipe(b *testing.B) {
@@ -116,16 +118,44 @@ func Benchmark_Distribute(b *testing.B) {
 	}
 }
 
-func Benchmark_ToStream(b *testing.B) {
+func Benchmark_Stream(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	testdata := Slice[int](Ints[int](100))
+
+	s := Scaler[int, int]{
+		Fn: func(_ context.Context, in int) (int, bool) {
+			return in, true
+		},
+	}
+
+	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		out := ToStream(ctx, data)
-		for i := 0; i < len(data); i++ {
-			<-out
+		// Test that the scaler can be used with a nil context.
+		out, err := s.Exec(nil, testdata.Chan(ctx))
+		if err != nil {
+			b.Errorf("expected no error, got %v", err)
+		}
+
+		seen := 0
+
+	tloop:
+		for {
+			select {
+			case <-ctx.Done():
+				b.Fatal("context closed")
+			case _, ok := <-out:
+				if !ok {
+					break tloop
+				}
+				seen++
+			}
+		}
+
+		if seen != len(testdata) {
+			b.Errorf("expected %v, got %v", len(testdata), seen)
 		}
 	}
 }

@@ -34,6 +34,40 @@ name.
 
 **`type InterceptFunc[T, U any] func(context.Context, T) (U, bool)`**
 
+```go
+type Scaler[T, U any] struct {
+        Wait time.Duration
+        Life time.Duration
+        Fn   InterceptFunc[T, U]
+}
+```
+
+>Scaler implements generic auto-scaling logic which starts with a net-zero
+    set of processing routines (with the exception of the channel listener) and
+    then scales up and down based on the CPU contention of a system and the
+    speed at which the InterceptionFunc is able to process data. Once the
+    incoming channel becomes blocked (due to nothing being sent) each of the
+    spawned routines will finish out their execution of Fn and then the internal
+    timer will collapse brining the routine count back to zero until there is
+    more to be done.
+>To use Scalar, simply create a new Scaler[T, U], configuring the Wait, Life,
+    and InterceptFunc fields. These fields are what configure the functionality
+    of the Scaler.
+>NOTE: Fn is REQUIRED!
+>After creating the Scaler instance and configuring it, call the Exec method
+    passing the appropriate context and input channel.
+>Internally the Scaler implementation will wait for data on the incoming
+    channel and attempt to send it to a layer2 channel. If the layer2 channel is
+    blocking and the Wait time has been reached, then the Scaler will spawn a
+    new layer2 which will increase throughput for the Scaler, and Scaler will
+    attempt to send the data to the layer2 channel once more. This process will
+    repeat until a successful send occurs. (This should only loop twice)
+
+**`func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error)`**
+    Exec starts the internal Scaler routine (the first layer of processing) and
+    returns the output channel where the resulting data from the Fn function
+    will be sent.
+
 ### FUNCTIONS
 
 **`func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T)`**

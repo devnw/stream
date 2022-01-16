@@ -6,3 +6,5 @@ go.structs.dev/gen v0.0.0-20211222120430-9fde850148d1 h1:l8Kt4BXjoTfwBDZ8qWanHf2
 go.structs.dev/gen v0.0.0-20211222120430-9fde850148d1/go.mod h1:Y1KXGuqAQdeL0G485oZzpgVwVZ4x+/7/ViNdQJuINo4=
 go.structs.dev/gen v0.0.0-20211222205854-0ab8b615977b h1:z+6XzvhzYRAMm8Rvzo5DZ++YcetdhFtWA/KlA2tP9P0=
 go.structs.dev/gen v0.0.0-20211222205854-0ab8b615977b/go.mod h1:Y1KXGuqAQdeL0G485oZzpgVwVZ4x+/7/ViNdQJuINo4=
+go.structs.dev/gen v0.0.0-20220115233915-1dbfb098b311 h1:SP1OV5EqEZjrl1gaIURtX3FstI/6B5iUxYgoXm3XCSg=
+go.structs.dev/gen v0.0.0-20220115233915-1dbfb098b311/go.mod h1:Y1KXGuqAQdeL0G485oZzpgVwVZ4x+/7/ViNdQJuINo4=
