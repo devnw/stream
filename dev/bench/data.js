@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1642213684811,
+  "lastUpdate": 1642297252064,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -312,6 +312,66 @@ window.BENCHMARK_DATA = {
             "value": 5032,
             "unit": "ns/op",
             "extra": "238417 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "8186e9bc20761e99c3906122c054ea0ce09d7a31",
+          "message": "Removed replace directive and updated gen package",
+          "timestamp": "2022-01-15T20:40:02-05:00",
+          "tree_id": "01fb1c94a3f413f98fd490b0baccba1f502b9a78",
+          "url": "https://github.com/devnw/stream/commit/8186e9bc20761e99c3906122c054ea0ce09d7a31"
+        },
+        "date": 1642297251529,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 469.4,
+            "unit": "ns/op",
+            "extra": "2562436 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 445.9,
+            "unit": "ns/op",
+            "extra": "2539905 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1539,
+            "unit": "ns/op",
+            "extra": "751628 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 926.7,
+            "unit": "ns/op",
+            "extra": "1356428 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 2137,
+            "unit": "ns/op",
+            "extra": "598940 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Stream",
+            "value": 2506576,
+            "unit": "ns/op",
+            "extra": "470 times\n2 procs"
           }
         ]
       }
