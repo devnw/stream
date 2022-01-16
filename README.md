@@ -107,10 +107,6 @@ U]) <-chan U`**
     desired. Cancelling the context or closing the incoming channel is important
     to ensure that the goroutine is properly terminated.
 
-**`func ToStream[U ~[]T, T any](ctx context.Context, in U) <-chan T`**
->ToStream accepts an slice of values and converts them to a channel.
->**NOTE:** This function does NOT use a buffered channel.
-
 ## Benchmarks
 
 To execute the benchmarks, run the following command:
