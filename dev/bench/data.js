@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1642297252064,
+  "lastUpdate": 1645876763907,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -372,6 +372,66 @@ window.BENCHMARK_DATA = {
             "value": 2506576,
             "unit": "ns/op",
             "extra": "470 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e7b23710bec5030f8da83dec74da04389842485a",
+          "message": "Merge pull request #1 from devnw/dependabot/github_actions/golangci/golangci-lint-action-3",
+          "timestamp": "2022-02-26T06:58:40-05:00",
+          "tree_id": "5fabfd6ddab972ff90cc72b3a2e7f7dfff399536",
+          "url": "https://github.com/devnw/stream/commit/e7b23710bec5030f8da83dec74da04389842485a"
+        },
+        "date": 1645876763445,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 650.6,
+            "unit": "ns/op",
+            "extra": "1924801 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 636,
+            "unit": "ns/op",
+            "extra": "1902129 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 2241,
+            "unit": "ns/op",
+            "extra": "544364 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 1274,
+            "unit": "ns/op",
+            "extra": "936644 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 2587,
+            "unit": "ns/op",
+            "extra": "444633 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Stream",
+            "value": 3038317,
+            "unit": "ns/op",
+            "extra": "332 times\n2 procs"
           }
         ]
       }
