@@ -19,7 +19,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
           stable: false
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Build
         run: go build ./...
   test:
@@ -33,7 +33,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -53,7 +53,7 @@ jobs:
     needs: [build, test]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
