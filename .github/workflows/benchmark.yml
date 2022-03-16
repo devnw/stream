@@ -13,7 +13,7 @@ jobs:
     name: Execute Benchmarks
     strategy:
       matrix:
-        go-version: [1.18.0-beta1]
+        go-version: [1.18.x]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v2

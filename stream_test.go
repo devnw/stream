@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"constraints"
 	"context"
 	"testing"
 	"time"
@@ -154,7 +153,7 @@ func Test_FanIn(t *testing.T) {
 	FanInTest(t, "float64", FloatTests[float64](100, 1000))
 }
 
-func InterceptTest[U ~[]T, T constraints.Signed](
+func InterceptTest[U ~[]T, T signed](
 	t *testing.T,
 	name string,
 	data []U,
@@ -421,7 +420,7 @@ func Test_Distribute(t *testing.T) {
 func Test_Distribute_Cancelled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	
+
 	in, out := make(chan int), make(chan int)
 	defer close(in)
 	defer close(out)
