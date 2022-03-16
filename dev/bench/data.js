@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1647474883617,
+  "lastUpdate": 1647475078469,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -612,6 +612,66 @@ window.BENCHMARK_DATA = {
             "value": 2200480,
             "unit": "ns/op",
             "extra": "541 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "5bb97f13d30cfbb55aeefd92d90830aba0d2ce25",
+          "message": "Fixing a couple links in the readme",
+          "timestamp": "2022-03-16T19:57:17-04:00",
+          "tree_id": "a4c9fb097dd618a599e595c3bad2e175f3cfe300",
+          "url": "https://github.com/devnw/stream/commit/5bb97f13d30cfbb55aeefd92d90830aba0d2ce25"
+        },
+        "date": 1647475078051,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 473.9,
+            "unit": "ns/op",
+            "extra": "2552239 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 468.9,
+            "unit": "ns/op",
+            "extra": "2557479 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1616,
+            "unit": "ns/op",
+            "extra": "761758 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 946.9,
+            "unit": "ns/op",
+            "extra": "1264297 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 2230,
+            "unit": "ns/op",
+            "extra": "535143 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Stream",
+            "value": 1703195,
+            "unit": "ns/op",
+            "extra": "681 times\n2 procs"
           }
         ]
       }
