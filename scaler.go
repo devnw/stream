@@ -41,7 +41,7 @@ type Scaler[T, U any] struct {
 // returns the output channel where the resulting data from the Fn function
 // will be sent.
 func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 
 	// Fn is REQUIRED!
 	if s.Fn == nil {

@@ -23,7 +23,7 @@ import (
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 
 	// Pipe is just a fan-out of a single channel.
 	FanOut(ctx, in, out)
@@ -41,7 +41,7 @@ func Intercept[T, U any](
 	in <-chan T,
 	fn InterceptFunc[T, U],
 ) <-chan U {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 	out := make(chan U)
 
 	go func() {
@@ -91,7 +91,7 @@ func Intercept[T, U any](
 // so ensuring that the context is cancelled or the incoming channels
 // are closed is important to ensure that the goroutine is terminated.
 func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 	out := make(chan T)
 
 	if len(in) == 0 {
@@ -121,7 +121,7 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 
 	if len(out) == 0 {
 		return
@@ -161,7 +161,7 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 // desired. Cancelling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
 func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
-	ctx, _ = _ctx(ctx)
+	ctx = _ctx(ctx)
 
 	if len(out) == 0 {
 		return
