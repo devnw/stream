@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1647987993278,
+  "lastUpdate": 1647988106772,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -852,6 +852,66 @@ window.BENCHMARK_DATA = {
             "value": 2329651,
             "unit": "ns/op",
             "extra": "493 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20b5ccf2513598473db919b77611bc6f01818495",
+          "message": "Merge pull request #7 from devnw/GH-5-recover",
+          "timestamp": "2022-03-22T18:27:33-04:00",
+          "tree_id": "be710037b7164e409c1e288db819e68b6b5e58a3",
+          "url": "https://github.com/devnw/stream/commit/20b5ccf2513598473db919b77611bc6f01818495"
+        },
+        "date": 1647988105711,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 635.7,
+            "unit": "ns/op",
+            "extra": "1914090 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 654.5,
+            "unit": "ns/op",
+            "extra": "1896810 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 2251,
+            "unit": "ns/op",
+            "extra": "526471 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 1293,
+            "unit": "ns/op",
+            "extra": "862501 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 1907,
+            "unit": "ns/op",
+            "extra": "618600 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Scaler",
+            "value": 2393053,
+            "unit": "ns/op",
+            "extra": "523 times\n2 procs"
           }
         ]
       }
