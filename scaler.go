@@ -65,7 +65,6 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 	}
 
 	go func() {
-		defer recover()
 		defer close(out)
 
 		wg := sync.WaitGroup{}
@@ -137,7 +136,6 @@ func (s Scaler[T, U]) layer2(ctx context.Context, in <-chan T) <-chan U {
 	out := make(chan U)
 
 	go func() {
-		defer recover()
 		defer close(out)
 
 		timer := time.NewTimer(s.Life)
