@@ -118,7 +118,7 @@ func Benchmark_Distribute(b *testing.B) {
 	}
 }
 
-func Benchmark_Stream(b *testing.B) {
+func Benchmark_Scaler(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
