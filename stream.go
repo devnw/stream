@@ -44,7 +44,6 @@ func Intercept[T, U any](
 	out := make(chan U)
 
 	go func() {
-		defer recover()
 		defer close(out)
 
 		for {
@@ -59,9 +58,6 @@ func Intercept[T, U any](
 				// Executing this in a function literal ensures that any panic
 				// will be caught during execution of the function
 				func() {
-					// TODO: Should something happen with this panic data?
-					defer recover()
-
 					// Determine if the function was successful
 					result, ok := fn(ctx, v)
 					if !ok {
@@ -139,7 +135,6 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				// Closure to catch panic on closed channel write.
 				// Continue Loop
 				func() {
-					defer recover()
 					select {
 					case <-ctx.Done():
 						return
