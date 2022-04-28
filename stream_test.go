@@ -443,6 +443,66 @@ func Test_Distribute_ZeroOut(t *testing.T) {
 	Distribute(ctx, in)
 }
 
+func Test_FanOut(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	c1, c2, c3 := make(chan int), make(chan int), make(chan int)
+	var c4 chan int
+	data := Ints[int](1000)
+
+	go FanOut(ctx, Slice[int](data).Chan(ctx), c1, c2, c3, c4)
+
+	seen := make(map[int]int)
+	for i := 0; i < len(data)*3; i++ {
+		select {
+		case <-ctx.Done():
+			t.Fatal("context cancelled")
+			return
+		case _, ok := <-c1:
+			if !ok {
+				return
+			}
+
+			seen[1]++
+		case _, ok := <-c2:
+			if !ok {
+				return
+			}
+
+			seen[2]++
+		case _, ok := <-c3:
+			if !ok {
+				return
+			}
+
+			seen[3]++
+		case _, ok := <-c4:
+			if !ok {
+				return
+			}
+
+			seen[4]++
+		}
+	}
+
+	if len(seen) != 3 {
+		t.Fatalf("expected %v, got %v", len(data)-1, len(seen))
+	}
+
+	for k, v := range seen {
+		if k == 4 {
+			if v > 0 {
+				t.Fatalf("expected %v, got %v", 0, v)
+			}
+		}
+
+		if v != len(data) {
+			t.Fatalf("Chan C%v: expected %v, got %v", k, len(data), v)
+		}
+	}
+}
+
 func Test_FanOut_ZeroOut(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

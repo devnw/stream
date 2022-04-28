@@ -13,6 +13,8 @@ package stream
 import (
 	"context"
 	"reflect"
+
+	. "go.structs.dev/gen"
 )
 
 // Pipe accepts an incoming data channel and pipes it to the supplied
@@ -131,16 +133,37 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				return
 			}
 
-			for _, o := range out {
-				// Closure to catch panic on closed channel write.
-				// Continue Loop
-				func() {
-					select {
-					case <-ctx.Done():
-						return
-					case o <- v:
-					}
-				}()
+			// Closure to catch panic on closed channel write.
+			selectCases := make([]reflect.SelectCase, 0, len(out)+1)
+
+			// 0 index is context
+			selectCases = append(selectCases, reflect.SelectCase{
+				Dir:  reflect.SelectRecv,
+				Chan: reflect.ValueOf(ctx.Done()),
+			})
+
+			for _, outc := range out {
+				// Skip nil channels until they are non-nil
+				if outc == nil {
+					continue
+				}
+
+				selectCases = append(selectCases, reflect.SelectCase{
+					Dir:  reflect.SelectSend,
+					Chan: reflect.ValueOf(outc),
+					Send: reflect.ValueOf(v),
+				})
+			}
+
+			for len(selectCases) > 1 {
+				chosen, _, _ := reflect.Select(selectCases)
+
+				// The context was cancelled.
+				if chosen == 0 {
+					return
+				}
+
+				selectCases = Exclude(selectCases, selectCases[chosen])
 			}
 		}
 
@@ -148,8 +171,7 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 }
 
 // Distribute accepts an incoming data channel and distributes the data among
-// the supplied outgoing data channels. This distribution is done stochastically
-// using the cryptographic random number generator.
+// the supplied outgoing data channels using a dynamic select statement.
 //
 // NOTE: Execute the Distribute function in a goroutine if parallel execution is
 // desired. Cancelling the context or closing the incoming channel is important
@@ -170,24 +192,19 @@ func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				return
 			}
 
-			// Closure to catch panic on closed channel write.
-			func() {
-				defer recover()
-
-				selectCases := make([]reflect.SelectCase, 0, len(out)+1)
-				for _, outc := range out {
-					selectCases = append(selectCases, reflect.SelectCase{
-						Dir:  reflect.SelectSend,
-						Chan: reflect.ValueOf(outc),
-						Send: reflect.ValueOf(v),
-					})
-				}
+			selectCases := make([]reflect.SelectCase, 0, len(out)+1)
+			for _, outc := range out {
 				selectCases = append(selectCases, reflect.SelectCase{
-					Dir:  reflect.SelectRecv,
-					Chan: reflect.ValueOf(ctx.Done()),
+					Dir:  reflect.SelectSend,
+					Chan: reflect.ValueOf(outc),
+					Send: reflect.ValueOf(v),
 				})
-				_, _, _ = reflect.Select(selectCases)
-			}()
+			}
+			selectCases = append(selectCases, reflect.SelectCase{
+				Dir:  reflect.SelectRecv,
+				Chan: reflect.ValueOf(ctx.Done()),
+			})
+			_, _, _ = reflect.Select(selectCases)
 		}
 
 	}
