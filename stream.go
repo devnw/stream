@@ -26,8 +26,22 @@ import (
 func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
 	ctx = _ctx(ctx)
 
-	// Pipe is just a fan-out of a single channel.
-	FanOut(ctx, in, out)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case v, ok := <-in:
+			if !ok {
+				return
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case out <- v:
+			}
+		}
+	}
 }
 
 type InterceptFunc[T, U any] func(context.Context, T) (U, bool)
