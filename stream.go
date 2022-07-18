@@ -13,8 +13,9 @@ package stream
 import (
 	"context"
 	"reflect"
+	"sync"
 
-	. "go.structs.dev/gen"
+	"go.structs.dev/gen"
 )
 
 // Pipe accepts an incoming data channel and pipes it to the supplied
@@ -110,16 +111,21 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 		return out
 	}
 
+	var wg sync.WaitGroup
 	defer func() {
 		go func() {
-			<-ctx.Done()
+			wg.Wait()
 			close(out)
 		}()
 	}()
 
+	wg.Add(len(in))
 	for _, i := range in {
 		// Pipe the result of the channel to the output channel.
-		go Pipe(ctx, i, out)
+		go func(i <-chan T) {
+			defer wg.Done()
+			Pipe(ctx, i, out)
+		}(i)
 	}
 
 	return out
@@ -177,7 +183,7 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 					return
 				}
 
-				selectCases = Exclude(selectCases, selectCases[chosen])
+				selectCases = gen.Exclude(selectCases, selectCases[chosen])
 			}
 		}
 

@@ -18,16 +18,6 @@ To install the package, run:
     go get -u go.atomizer.io/stream@latest
 ```
 
-## Importing
-
-It is recommended to use the package via the following import:
-
-`import . "go.atomizer.io/stream"`
-
-Using the `.` import allows for functions to be called directly as if the
-functions were in the same namespace without the need to append the package
-name.
-
 ## Benchmarks
 
 To execute the benchmarks, run the following command:

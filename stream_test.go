@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	. "go.structs.dev/gen"
+	"go.structs.dev/gen"
 )
 
 func PipeTest[U ~[]T, T comparable](
@@ -95,7 +95,7 @@ func FanInTest[U ~[]T, T comparable](
 				out[i] = make(chan T)
 			}
 
-			fan := FanIn(ctx, ReadOnly(out...)...)
+			fan := FanIn(ctx, gen.ReadOnly(out...)...)
 
 			ichan := 0
 			cursor := 0
@@ -117,23 +117,25 @@ func FanInTest[U ~[]T, T comparable](
 			}
 
 			returned := make([]T, len(data))
-			for i := 0; i < len(data); i++ {
+			for i := 0; ; i++ {
 				select {
 				case <-ctx.Done():
 					t.Error("context cancelled")
 					return
 				case out, ok := <-fan:
 					if !ok {
-						if i != len(data)-1 {
-							t.Fatal("c2 closed prematurely")
+						if i != len(data) {
+							t.Fatalf("c2 closed prematurely; index %v", i)
 						}
+
+						return
 					}
 
 					returned[i] = out
 				}
 			}
 
-			diff := Diff(data, returned)
+			diff := gen.Diff(data, returned)
 			if len(diff) != 0 {
 				t.Errorf("unexpected diff: %v", diff)
 			}
@@ -222,7 +224,7 @@ func Test_Intercept_ChangeType(t *testing.T) {
 
 	out := Intercept(
 		ctx,
-		Slice[int](integers).Chan(ctx),
+		gen.Slice[int](integers).Chan(ctx),
 		func(_ context.Context, in int) (bool, bool) {
 			return in%2 == 0, true
 		})
@@ -355,7 +357,7 @@ func DistributeTest[U ~[]T, T comparable](
 
 			c1, c2, c3 := make(chan T), make(chan T), make(chan T)
 
-			go Distribute(ctx, Slice[T](data).Chan(ctx), c1, c2, c3)
+			go Distribute(ctx, gen.Slice[T](data).Chan(ctx), c1, c2, c3)
 
 			c1total, c2total, c3total := 0, 0, 0
 			for i := 0; i < len(data); i++ {
@@ -451,7 +453,7 @@ func Test_FanOut(t *testing.T) {
 	var c4 chan int
 	data := Ints[int](1000)
 
-	go FanOut(ctx, Slice[int](data).Chan(ctx), c1, c2, c3, c4)
+	go FanOut(ctx, gen.Slice[int](data).Chan(ctx), c1, c2, c3, c4)
 
 	seen := make(map[int]int)
 	for i := 0; i < len(data)*3; i++ {

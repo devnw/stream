@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	. "go.structs.dev/gen"
+	"go.structs.dev/gen"
 )
 
 var emptyFn = func(context.Context, any) (any, bool) { return 0, true }
@@ -24,7 +24,7 @@ func ScalerTest[U ~[]T, T comparable](
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			testdata := Slice[T](data)
+			testdata := gen.Slice[T](data)
 
 			integers := testdata.Map()
 

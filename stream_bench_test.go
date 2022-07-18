@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	. "go.structs.dev/gen"
+	"go.structs.dev/gen"
 )
 
 func Benchmark_Pipe(b *testing.B) {
@@ -122,7 +122,7 @@ func Benchmark_Scaler(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	testdata := Slice[int](Ints[int](100))
+	testdata := gen.Slice[int](Ints[int](100))
 
 	s := Scaler[int, int]{
 		Fn: func(_ context.Context, in int) (int, bool) {
