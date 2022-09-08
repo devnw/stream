@@ -17,19 +17,19 @@ linters-settings:
   goconst:
     min-len: 2
     min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
+  # gocritic:
+  #   enabled-tags:
+  #     - diagnostic
+  #     - experimental
+  #     - opinionated
+  #     - performance
+  #     - style
+  #   disabled-checks:
+  #     - dupImport # https://github.com/go-critic/go-critic/issues/845
+  #     - ifElseChain
+  #     - octalLiteral
+  #     - whyNoLint
+  #     - wrapperFunc
   gocyclo:
     min-complexity: 15
   goimports:
@@ -73,7 +73,7 @@ linters:
     - exhaustive
     - funlen
     - goconst
-    - gocritic
+    # - gocritic
     - gocyclo
     - gofmt
     - goimports

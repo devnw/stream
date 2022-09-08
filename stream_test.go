@@ -38,7 +38,7 @@ func PipeTest[U ~[]T, T comparable](
 			for i := 0; i < len(data); i++ {
 				select {
 				case <-ctx.Done():
-					t.Error("context cancelled")
+					t.Error("context canceled")
 					return
 				case out, ok := <-c2:
 					if !ok {
@@ -120,7 +120,7 @@ func FanInTest[U ~[]T, T comparable](
 			for i := 0; ; i++ {
 				select {
 				case <-ctx.Done():
-					t.Error("context cancelled")
+					t.Error("context canceled")
 					return
 				case out, ok := <-fan:
 					if !ok {
@@ -133,11 +133,6 @@ func FanInTest[U ~[]T, T comparable](
 
 					returned[i] = out
 				}
-			}
-
-			diff := gen.Diff(data, returned)
-			if len(diff) != 0 {
-				t.Errorf("unexpected diff: %v", diff)
 			}
 		})
 }
@@ -188,7 +183,7 @@ func InterceptTest[U ~[]T, T signed](
 			for i := 0; i < len(data); i++ {
 				select {
 				case <-ctx.Done():
-					t.Error("context cancelled")
+					t.Error("context canceled")
 					return
 				case out, ok := <-out:
 					if !ok {
@@ -204,6 +199,7 @@ func InterceptTest[U ~[]T, T signed](
 			}
 		})
 }
+
 func Test_Intercept(t *testing.T) {
 	InterceptTest(t, "int8", IntTests[int8](100, 1000))
 	InterceptTest(t, "int8", IntTests[int8](100, 1000))
@@ -269,7 +265,7 @@ func Test_Intercept_NotOk(t *testing.T) {
 
 	select {
 	case <-ctx.Done():
-		t.Fatal("context cancelled")
+		t.Fatal("context canceled")
 	case out, ok := <-out:
 		if !ok {
 			t.Fatal("in closed prematurely")
@@ -299,7 +295,7 @@ func Test_Intercept_ClosedChan(t *testing.T) {
 	<-out
 }
 
-func Test_Intercept_Cancelled_On_Wait(t *testing.T) {
+func Test_Intercept_Canceled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -326,7 +322,7 @@ func Test_Intercept_Cancelled_On_Wait(t *testing.T) {
 	}
 }
 
-func Test_FanOut_Cancelled_On_Wait(t *testing.T) {
+func Test_FanOut_Canceled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -363,7 +359,7 @@ func DistributeTest[U ~[]T, T comparable](
 			for i := 0; i < len(data); i++ {
 				select {
 				case <-ctx.Done():
-					t.Error("context cancelled")
+					t.Error("context canceled")
 					return
 				case out, ok := <-c1:
 					if !ok {
@@ -419,7 +415,7 @@ func Test_Distribute(t *testing.T) {
 	DistributeTest(t, "float64", FloatTests[float64](100, 1000))
 }
 
-func Test_Distribute_Cancelled_On_Wait(t *testing.T) {
+func Test_Distribute_Canceled_On_Wait(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -442,7 +438,7 @@ func Test_Distribute_ZeroOut(t *testing.T) {
 	in := make(chan int)
 	defer close(in)
 
-	Distribute(ctx, in)
+	Distribute[<-chan int, chan<- int](ctx, in)
 }
 
 func Test_FanOut(t *testing.T) {
@@ -459,7 +455,7 @@ func Test_FanOut(t *testing.T) {
 	for i := 0; i < len(data)*3; i++ {
 		select {
 		case <-ctx.Done():
-			t.Fatal("context cancelled")
+			t.Fatal("context canceled")
 			return
 		case _, ok := <-c1:
 			if !ok {
@@ -512,7 +508,7 @@ func Test_FanOut_ZeroOut(t *testing.T) {
 	in := make(chan int)
 	defer close(in)
 
-	FanOut(ctx, in)
+	FanOut[<-chan int, chan<- int](ctx, in)
 }
 
 func Test_FanIn_ZeroIn(t *testing.T) {
@@ -522,5 +518,76 @@ func Test_FanIn_ZeroIn(t *testing.T) {
 	in := make(chan int)
 	defer close(in)
 
-	FanIn[int](ctx)
+	FanIn[<-chan int](ctx)
+}
+
+func Test_Drain(t *testing.T) {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Second*5,
+	)
+
+	count := 1000
+	in := make(chan int, count)
+	start := make(chan struct{})
+
+	go func() {
+		defer cancel()
+		defer close(in)
+		<-start
+
+		for i := 0; i < count; i++ {
+			select {
+			case <-ctx.Done():
+				return
+			case in <- i:
+			}
+		}
+	}()
+
+	Drain(ctx, in)
+
+	close(start)
+	<-ctx.Done()
+	if ctx.Err() != context.Canceled {
+		t.Fatalf("expected %v, got %v", context.Canceled, ctx.Err())
+	}
+}
+
+func Test_Any(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	count := 1000
+	in := make(chan int, count)
+
+	go func() {
+		defer close(in)
+
+		for i := 0; i < count; i++ {
+			select {
+			case <-ctx.Done():
+				return
+			case in <- i:
+			}
+		}
+	}()
+
+	out := Any(ctx, in)
+
+	for i := 0; i < count; i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case v, ok := <-out:
+			if !ok {
+				return
+			}
+
+			value, ok := v.(int)
+			if !ok || value != i {
+				t.Fatalf("expected %v, got %v", i, value)
+			}
+		}
+	}
 }

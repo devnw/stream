@@ -3,7 +3,7 @@
 //
 // It is recommended to use the package via the following import:
 //
-//     import . "go.atomizer.io/stream"
+//	import . "go.atomizer.io/stream"
 //
 // Using the `.` import allows for functions to be called directly as if
 // the functions were in the same namespace without the need to append
@@ -18,13 +18,23 @@ import (
 	"go.structs.dev/gen"
 )
 
+type readonly[T any] interface {
+	<-chan T | chan T
+}
+
+type writeonly[T any] interface {
+	chan<- T | chan T
+}
+
 // Pipe accepts an incoming data channel and pipes it to the supplied
 // outgoing data channel.
 //
 // NOTE: Execute the Pipe function in a goroutine if parallel execution is
-// desired. Cancelling the context or closing the incoming channel is important
+// desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func Pipe[T any](ctx context.Context, in <-chan T, out chan<- T) {
+func Pipe[In readonly[T], Out writeonly[T], T any](
+	ctx context.Context, in In, out Out,
+) {
 	ctx = _ctx(ctx)
 
 	for {
@@ -51,10 +61,10 @@ type InterceptFunc[T, U any] func(context.Context, T) (U, bool)
 // accepts the incoming data and returns data of the same type and a boolean
 // indicating whether the data should be forwarded to the output channel.
 // The function is executed for each data item in the incoming channel as long
-// as the context is not cancelled or the incoming channel remains open.
-func Intercept[T, U any](
+// as the context is not canceled or the incoming channel remains open.
+func Intercept[In readonly[T], T, U any](
 	ctx context.Context,
-	in <-chan T,
+	in In,
 	fn InterceptFunc[T, U],
 ) <-chan U {
 	ctx = _ctx(ctx)
@@ -100,9 +110,9 @@ func Intercept[T, U any](
 // that receives all the data from the supplied channels.
 //
 // NOTE: The transfer takes place in a goroutine for each channel
-// so ensuring that the context is cancelled or the incoming channels
+// so ensuring that the context is canceled or the incoming channels
 // are closed is important to ensure that the goroutine is terminated.
-func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
+func FanIn[In readonly[T], T any](ctx context.Context, in ...In) <-chan T {
 	ctx = _ctx(ctx)
 	out := make(chan T)
 
@@ -135,9 +145,11 @@ func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 // supplied outgoing data channels.
 //
 // NOTE: Execute the FanOut function in a goroutine if parallel execution is
-// desired. Cancelling the context or closing the incoming channel is important
+// desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
+func FanOut[In readonly[T], Out writeonly[T], T any](
+	ctx context.Context, in In, out ...Out,
+) {
 	ctx = _ctx(ctx)
 
 	if len(out) == 0 {
@@ -178,7 +190,7 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 			for len(selectCases) > 1 {
 				chosen, _, _ := reflect.Select(selectCases)
 
-				// The context was cancelled.
+				// The context was canceled.
 				if chosen == 0 {
 					return
 				}
@@ -186,7 +198,6 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 				selectCases = gen.Exclude(selectCases, selectCases[chosen])
 			}
 		}
-
 	}
 }
 
@@ -194,9 +205,11 @@ func FanOut[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 // the supplied outgoing data channels using a dynamic select statement.
 //
 // NOTE: Execute the Distribute function in a goroutine if parallel execution is
-// desired. Cancelling the context or closing the incoming channel is important
+// desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
+func Distribute[In readonly[T], Out writeonly[T], T any](
+	ctx context.Context, in In, out ...Out,
+) {
 	ctx = _ctx(ctx)
 
 	if len(out) == 0 {
@@ -226,6 +239,32 @@ func Distribute[T any](ctx context.Context, in <-chan T, out ...chan<- T) {
 			})
 			_, _, _ = reflect.Select(selectCases)
 		}
-
 	}
+}
+
+// Drain accepts a channel and drains the channel until the channel is closed
+// or the context is canceled.
+func Drain[U readonly[T], T any](ctx context.Context, in U) {
+	ctx = _ctx(ctx)
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case _, ok := <-in:
+				if !ok {
+					return
+				}
+			}
+		}
+	}()
+}
+
+// Any accepts an incoming data channel and converts the channel to a readonly
+// channel of the `any` type.
+func Any[U readonly[T], T any](ctx context.Context, in U) <-chan any {
+	return Intercept(ctx, in, func(_ context.Context, in T) (any, bool) {
+		return in, true
+	})
 }

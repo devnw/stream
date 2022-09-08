@@ -19,7 +19,7 @@ func Benchmark_Pipe(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		select {
 		case <-ctx.Done():
-			b.Fatal("context cancelled")
+			b.Fatal("context canceled")
 		case c1 <- value:
 		case out, ok := <-c2:
 			if !ok {
@@ -47,7 +47,7 @@ func Benchmark_Intercept(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		select {
 		case <-ctx.Done():
-			b.Fatal("context cancelled")
+			b.Fatal("context canceled")
 		case in <- value:
 		case out, ok := <-out:
 			if !ok {
@@ -75,7 +75,7 @@ func Benchmark_FanIn(b *testing.B) {
 		for i := 0; i < 2; i++ {
 			select {
 			case <-ctx.Done():
-				b.Fatal("context cancelled")
+				b.Fatal("context canceled")
 			case _, ok := <-out:
 				if !ok {
 					b.Fatal("out closed prematurely")
@@ -134,6 +134,7 @@ func Benchmark_Scaler(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		// Test that the scaler can be used with a nil context.
+		//nolint:staticcheck
 		out, err := s.Exec(nil, testdata.Chan(ctx))
 		if err != nil {
 			b.Errorf("expected no error, got %v", err)

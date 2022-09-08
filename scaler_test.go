@@ -35,6 +35,7 @@ func ScalerTest[U ~[]T, T comparable](
 			}
 
 			// Test that the scaler can be used with a nil context.
+			//nolint:staticcheck
 			out, err := s.Exec(nil, testdata.Chan(ctx))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
@@ -83,6 +84,7 @@ func Test_Scaler_Exec(t *testing.T) {
 func Test_Scaler_NilFn(t *testing.T) {
 	s := Scaler[any, any]{}
 
+	//nolint:staticcheck
 	_, err := s.Exec(nil, nil)
 	if err == nil {
 		t.Error("Expected error, got nil")
@@ -106,6 +108,7 @@ func Test_Scaler_NilCtx(t *testing.T) {
 	cancel()
 
 	// Test that the scaler can be used with a nil context.
+	//nolint:staticcheck
 	out, err := s.Exec(nil, nil)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -130,6 +133,7 @@ func Test_Scaler_CloseIn(t *testing.T) {
 	close(in)
 
 	// Test that the scaler can be used with a nil context.
+	//nolint:staticcheck
 	out, err := s.Exec(nil, in)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
