@@ -438,7 +438,7 @@ func Test_Distribute_ZeroOut(t *testing.T) {
 	in := make(chan int)
 	defer close(in)
 
-	Distribute[<-chan int, chan<- int](ctx, in)
+	Distribute(ctx, in)
 }
 
 func Test_FanOut(t *testing.T) {
@@ -508,17 +508,14 @@ func Test_FanOut_ZeroOut(t *testing.T) {
 	in := make(chan int)
 	defer close(in)
 
-	FanOut[<-chan int, chan<- int](ctx, in)
+	FanOut(ctx, in)
 }
 
 func Test_FanIn_ZeroIn(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	in := make(chan int)
-	defer close(in)
-
-	FanIn[<-chan int](ctx)
+	FanIn[int](ctx)
 }
 
 func Test_Drain(t *testing.T) {

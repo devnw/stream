@@ -18,22 +18,14 @@ import (
 	"go.structs.dev/gen"
 )
 
-type readonly[T any] interface {
-	<-chan T | chan T
-}
-
-type writeonly[T any] interface {
-	chan<- T | chan T
-}
-
 // Pipe accepts an incoming data channel and pipes it to the supplied
 // outgoing data channel.
 //
 // NOTE: Execute the Pipe function in a goroutine if parallel execution is
 // desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func Pipe[In readonly[T], Out writeonly[T], T any](
-	ctx context.Context, in In, out Out,
+func Pipe[T any](
+	ctx context.Context, in <-chan T, out chan<- T,
 ) {
 	ctx = _ctx(ctx)
 
@@ -62,9 +54,9 @@ type InterceptFunc[T, U any] func(context.Context, T) (U, bool)
 // indicating whether the data should be forwarded to the output channel.
 // The function is executed for each data item in the incoming channel as long
 // as the context is not canceled or the incoming channel remains open.
-func Intercept[In readonly[T], T, U any](
+func Intercept[T, U any](
 	ctx context.Context,
-	in In,
+	in <-chan T,
 	fn InterceptFunc[T, U],
 ) <-chan U {
 	ctx = _ctx(ctx)
@@ -112,7 +104,7 @@ func Intercept[In readonly[T], T, U any](
 // NOTE: The transfer takes place in a goroutine for each channel
 // so ensuring that the context is canceled or the incoming channels
 // are closed is important to ensure that the goroutine is terminated.
-func FanIn[In readonly[T], T any](ctx context.Context, in ...In) <-chan T {
+func FanIn[T any](ctx context.Context, in ...<-chan T) <-chan T {
 	ctx = _ctx(ctx)
 	out := make(chan T)
 
@@ -147,8 +139,8 @@ func FanIn[In readonly[T], T any](ctx context.Context, in ...In) <-chan T {
 // NOTE: Execute the FanOut function in a goroutine if parallel execution is
 // desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func FanOut[In readonly[T], Out writeonly[T], T any](
-	ctx context.Context, in In, out ...Out,
+func FanOut[T any](
+	ctx context.Context, in <-chan T, out ...chan<- T,
 ) {
 	ctx = _ctx(ctx)
 
@@ -207,8 +199,8 @@ func FanOut[In readonly[T], Out writeonly[T], T any](
 // NOTE: Execute the Distribute function in a goroutine if parallel execution is
 // desired. Canceling the context or closing the incoming channel is important
 // to ensure that the goroutine is properly terminated.
-func Distribute[In readonly[T], Out writeonly[T], T any](
-	ctx context.Context, in In, out ...Out,
+func Distribute[T any](
+	ctx context.Context, in <-chan T, out ...chan<- T,
 ) {
 	ctx = _ctx(ctx)
 
@@ -244,7 +236,7 @@ func Distribute[In readonly[T], Out writeonly[T], T any](
 
 // Drain accepts a channel and drains the channel until the channel is closed
 // or the context is canceled.
-func Drain[U readonly[T], T any](ctx context.Context, in U) {
+func Drain[T any](ctx context.Context, in <-chan T) {
 	ctx = _ctx(ctx)
 
 	go func() {
@@ -263,7 +255,7 @@ func Drain[U readonly[T], T any](ctx context.Context, in U) {
 
 // Any accepts an incoming data channel and converts the channel to a readonly
 // channel of the `any` type.
-func Any[U readonly[T], T any](ctx context.Context, in U) <-chan any {
+func Any[T any](ctx context.Context, in <-chan T) <-chan any {
 	return Intercept(ctx, in, func(_ context.Context, in T) (any, bool) {
 		return in, true
 	})
