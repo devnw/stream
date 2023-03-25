@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666119853804,
+  "lastUpdate": 1679707056458,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -1392,6 +1392,66 @@ window.BENCHMARK_DATA = {
             "value": 829605,
             "unit": "ns/op",
             "extra": "1551 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "44da329376220fb18f8dcea3c48840967535da21",
+          "message": "feat(scaler.go): add support for a Wait modifier on scaler to increase or decrease duration based on an interval\n\nThis change also corrects some linter errors and adds my new linter configuration",
+          "timestamp": "2023-03-24T21:16:42-04:00",
+          "tree_id": "9a2b2eeae0358748e91c03f32658d26b864f82ec",
+          "url": "https://github.com/devnw/stream/commit/44da329376220fb18f8dcea3c48840967535da21"
+        },
+        "date": 1679707055993,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 458.3,
+            "unit": "ns/op",
+            "extra": "2606457 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 464.6,
+            "unit": "ns/op",
+            "extra": "2568754 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1608,
+            "unit": "ns/op",
+            "extra": "752318 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 2770,
+            "unit": "ns/op",
+            "extra": "402054 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 1491,
+            "unit": "ns/op",
+            "extra": "762694 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Scaler",
+            "value": 3868952,
+            "unit": "ns/op",
+            "extra": "265 times\n2 procs"
           }
         ]
       }
