@@ -65,21 +65,21 @@ func Floats[T float](size int) []T {
 	return out
 }
 
-func IntTests[T integer](tests, cap int) [][]T {
+func IntTests[T integer](tests, max int) [][]T {
 	out := make([][]T, tests)
 
 	for i := range out {
-		out[i] = Ints[T](cap)
+		out[i] = Ints[T](max)
 	}
 
 	return out
 }
 
-func FloatTests[T float](tests, cap int) [][]T {
+func FloatTests[T float](tests, max int) [][]T {
 	out := make([][]T, tests)
 
 	for i := range out {
-		out[i] = Floats[T](cap)
+		out[i] = Floats[T](max)
 	}
 
 	return out

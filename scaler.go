@@ -30,22 +30,38 @@ import (
 // is blocking and the Wait time has been reached, then the Scaler will spawn
 // a new layer2 which will increase throughput for the Scaler, and Scaler
 // will attempt to send the data to the layer2 channel once more. This process
-// will repeat until a successful send occurs. (This should only loop twice)
+// will repeat until a successful send occurs. (This should only loop twice).
 type Scaler[T, U any] struct {
 	Wait time.Duration
 	Life time.Duration
 	Fn   InterceptFunc[T, U]
+
+	// WaitModifier is used to modify the Wait time based on the number of
+	// times the Scaler has scaled up. This is useful for systems
+	// that are CPU bound and need to scale up more quickly.
+	WaitModifier DurationScaler
+
+	wScale *DurationScaler
 }
+
+var ErrFnRequired = fmt.Errorf("nil InterceptFunc, Fn is required")
 
 // Exec starts the internal Scaler routine (the first layer of processing) and
 // returns the output channel where the resulting data from the Fn function
 // will be sent.
+//
+//nolint:funlen // This really can't be broken up any further
 func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 	ctx = _ctx(ctx)
 
+	// set the configured tick as a pointer for execution
+	s.wScale = &s.WaitModifier
+	// set the original wait time on the ticker
+	s.wScale.originalDuration = s.Wait
+
 	// Fn is REQUIRED!
 	if s.Fn == nil {
-		return nil, fmt.Errorf("invalid <nil> InterceptFunc")
+		return nil, ErrFnRequired
 	}
 
 	// Create outbound channel
@@ -81,6 +97,8 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 		l2 := make(chan T)
 		ticker := time.NewTicker(s.Wait)
 		defer ticker.Stop()
+		step := 0
+		var stepMu sync.RWMutex
 
 	scaleLoop:
 		for {
@@ -102,8 +120,21 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 						wg.Add(1)
 						wgMu.Unlock()
 
+						if !s.WaitModifier.inactive() {
+							stepMu.Lock()
+							step++
+							stepMu.Unlock()
+						}
+
 						go func() {
 							defer wg.Done()
+							if !s.WaitModifier.inactive() {
+								defer func() {
+									stepMu.Lock()
+									step--
+									stepMu.Unlock()
+								}()
+							}
 
 							Pipe(ctx, s.layer2(ctx, l2), out)
 						}()
@@ -112,9 +143,11 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 					}
 				}
 
+				stepMu.RLock()
 				// Reset the ticker so that it does not immediately trip the
 				// case statement on loop.
-				ticker.Reset(s.Wait)
+				ticker.Reset(s.wScale.scaledDuration(s.Wait, step))
+				stepMu.RUnlock()
 			}
 		}
 	}()
@@ -180,4 +213,55 @@ func (s Scaler[T, U]) layer2(ctx context.Context, in <-chan T) <-chan U {
 	}()
 
 	return out
+}
+
+// DurationScaler is used to modify the time.Duration of a ticker or timer based on
+// a configured step value and modifier (between -1 and 1) value.
+type DurationScaler struct {
+	// Interval is the number the current step must be divisible by in order
+	// to modify the time.Duration.
+	Interval int
+
+	// ScalingFactor is a value between -1 and 1 that is used to modify the
+	// time.Duration of a ticker or timer. The value is multiplied by
+	// the ScalingFactor is multiplied by the duration for scaling.
+	ScalingFactor float64
+
+	// originalDuration is the time.Duration that was passed to the
+	// Scaler. This is used to reset the time.Duration of the ticker
+	// or timer.
+	originalDuration time.Duration
+
+	// lastInterval is the lastInterval step that was used to modify
+	// the time.Duration.
+	lastInterval int
+}
+
+func (t *DurationScaler) inactive() bool {
+	return t.Interval == 0 ||
+		(t.ScalingFactor == 0 ||
+			t.ScalingFactor <= -1 ||
+			t.ScalingFactor >= 1)
+}
+
+// scaledDuration returns the modified time.Duration based on the current step (cStep).
+func (t *DurationScaler) scaledDuration(
+	dur time.Duration,
+	currentInterval int,
+) time.Duration {
+	if t.inactive() {
+		return dur
+	}
+
+	mod := t.ScalingFactor
+	if currentInterval <= t.lastInterval {
+		mod = -mod
+	}
+
+	if currentInterval%t.Interval == 0 {
+		t.lastInterval = currentInterval
+		return dur + time.Duration(float64(t.originalDuration)*mod)
+	}
+
+	return dur
 }

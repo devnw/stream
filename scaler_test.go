@@ -35,7 +35,7 @@ func ScalerTest[U ~[]T, T comparable](
 			}
 
 			// Test that the scaler can be used with a nil context.
-			//nolint:staticcheck
+			//nolint:staticcheck // nil context on purpose
 			out, err := s.Exec(nil, testdata.Chan(ctx))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
@@ -84,7 +84,7 @@ func Test_Scaler_Exec(t *testing.T) {
 func Test_Scaler_NilFn(t *testing.T) {
 	s := Scaler[any, any]{}
 
-	//nolint:staticcheck
+	//nolint:staticcheck // nil context on purpose
 	_, err := s.Exec(nil, nil)
 	if err == nil {
 		t.Error("Expected error, got nil")
@@ -108,7 +108,7 @@ func Test_Scaler_NilCtx(t *testing.T) {
 	cancel()
 
 	// Test that the scaler can be used with a nil context.
-	//nolint:staticcheck
+	//nolint:staticcheck // nil context on purpose
 	out, err := s.Exec(nil, nil)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -133,7 +133,7 @@ func Test_Scaler_CloseIn(t *testing.T) {
 	close(in)
 
 	// Test that the scaler can be used with a nil context.
-	//nolint:staticcheck
+	//nolint:staticcheck // nil context on purpose
 	out, err := s.Exec(nil, in)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -285,4 +285,113 @@ func Test_Scaler_layer2_nosend(t *testing.T) {
 	case <-out:
 		t.Fatalf("expected 0 data to be sent, got 1")
 	}
+}
+
+func TestTickDur(t *testing.T) {
+	testCases := []struct {
+		name        string
+		tick        DurationScaler
+		duration    time.Duration
+		currentStep int
+		expected    time.Duration
+	}{
+		{
+			name:        "Test case 1",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 0.1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 3,
+			expected:    11 * time.Second,
+		},
+		{
+			name:        "Test case 2",
+			tick:        DurationScaler{Interval: 5, ScalingFactor: -0.1, originalDuration: 20 * time.Second},
+			duration:    20 * time.Second,
+			currentStep: 10,
+			expected:    18 * time.Second,
+		},
+		{
+			name:        "Test case 3",
+			tick:        DurationScaler{Interval: 2, ScalingFactor: 0.5, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 4,
+			expected:    15 * time.Second,
+		},
+		{
+			name:        "Test case 4",
+			tick:        DurationScaler{Interval: 4, ScalingFactor: -0.5, originalDuration: 30 * time.Second},
+			duration:    30 * time.Second,
+			currentStep: 8,
+			expected:    15 * time.Second,
+		},
+		{
+			name:        "Test case 5",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 0.1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 2,
+			expected:    10 * time.Second,
+		},
+		{
+			name:        "Test case 6: Step is divisible, modifier in range",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 0.1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 3,
+			expected:    11 * time.Second,
+		},
+		{
+			name:        "Test case 7: Step is not divisible, modifier in range",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 0.1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 2,
+			expected:    10 * time.Second,
+		},
+		{
+			name:        "Test case 8: Step is divisible, modifier is zero",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 0, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 3,
+			expected:    10 * time.Second,
+		},
+		{
+			name:        "Test case 9: Step is divisible, modifier is out of range",
+			tick:        DurationScaler{Interval: 3, ScalingFactor: 1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 3,
+			expected:    10 * time.Second,
+		},
+		{
+			name:        "Test case 10: Step is zero, modifier in range",
+			tick:        DurationScaler{Interval: 0, ScalingFactor: 0.1, originalDuration: 10 * time.Second},
+			duration:    10 * time.Second,
+			currentStep: 3,
+			expected:    10 * time.Second,
+		},
+		{
+			name: "Test case 6: Step number decreases",
+			tick: DurationScaler{
+				Interval:         2,
+				ScalingFactor:    0.5,
+				originalDuration: 10 * time.Second,
+				lastInterval:     4,
+			},
+			duration:    15 * time.Second,
+			currentStep: 2,
+			expected:    10 * time.Second,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := (&tc.tick).scaledDuration(tc.duration, tc.currentStep)
+			if result != tc.expected {
+				t.Errorf("Expected: %v, got: %v", tc.expected, result)
+			}
+		})
+	}
+}
+
+func FuzzTick(f *testing.F) {
+	f.Fuzz(func(t *testing.T, step, cStep int, mod float64, orig, dur int64) {
+		tick := &DurationScaler{Interval: step, ScalingFactor: mod, originalDuration: time.Duration(orig)}
+		_ = tick.scaledDuration(time.Duration(dur), cStep)
+	})
 }

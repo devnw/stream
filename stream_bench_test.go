@@ -134,7 +134,7 @@ func Benchmark_Scaler(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		// Test that the scaler can be used with a nil context.
-		//nolint:staticcheck
+		//nolint:staticcheck // nil context on purpose
 		out, err := s.Exec(nil, testdata.Chan(ctx))
 		if err != nil {
 			b.Errorf("expected no error, got %v", err)

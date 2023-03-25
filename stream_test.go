@@ -277,7 +277,7 @@ func Test_Intercept_NotOk(t *testing.T) {
 	}
 }
 
-func Test_Intercept_ClosedChan(t *testing.T) {
+func Test_Intercept_ClosedChan(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -322,7 +322,7 @@ func Test_Intercept_Canceled_On_Wait(t *testing.T) {
 	}
 }
 
-func Test_FanOut_Canceled_On_Wait(t *testing.T) {
+func Test_FanOut_Canceled_On_Wait(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -415,7 +415,7 @@ func Test_Distribute(t *testing.T) {
 	DistributeTest(t, "float64", FloatTests[float64](100, 1000))
 }
 
-func Test_Distribute_Canceled_On_Wait(t *testing.T) {
+func Test_Distribute_Canceled_On_Wait(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -431,7 +431,7 @@ func Test_Distribute_Canceled_On_Wait(t *testing.T) {
 	Distribute(ctx, in, out)
 }
 
-func Test_Distribute_ZeroOut(t *testing.T) {
+func Test_Distribute_ZeroOut(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -501,7 +501,7 @@ func Test_FanOut(t *testing.T) {
 	}
 }
 
-func Test_FanOut_ZeroOut(t *testing.T) {
+func Test_FanOut_ZeroOut(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -511,7 +511,7 @@ func Test_FanOut_ZeroOut(t *testing.T) {
 	FanOut(ctx, in)
 }
 
-func Test_FanIn_ZeroIn(t *testing.T) {
+func Test_FanIn_ZeroIn(_ *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
