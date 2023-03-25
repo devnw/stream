@@ -42,7 +42,7 @@ jobs:
       - name: Fuzz
         run: go test -fuzz=./... -fuzztime=10s
       - name: Test
-        run: go test -fuzz=. -fuzztime=10s -failfast ./... -race -coverprofile=coverage.txt -covermode=atomic
+        run: go test -failfast ./... -race -coverprofile=coverage.txt -covermode=atomic
       - name: Push Coverage to codecov.io
         uses: codecov/codecov-action@v3
         with:
