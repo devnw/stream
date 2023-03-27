@@ -11,8 +11,6 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -21,9 +19,7 @@ jobs:
 
     - name: Generate Go documentation and update README
       run: |
-        go install github.com/posener/goreadme/cmd/goreadme@latest
-
-        PACKAGE_NAME=$(grep -E '^module\s+\S+' go.mod | awk '{print $2}')
+        go install github.com/posener/goreadme/cmd/...@latest
 
         goreadme --recursive=true \
           --credit=false \
@@ -31,7 +27,6 @@ jobs:
           --functions=true \
           --types=true \
           --factories \
-          --import-path=$PACKAGE_NAME \
           --variabless=true > README.md
 
     - name: Create or update pull request
