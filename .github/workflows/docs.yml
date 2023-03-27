@@ -26,16 +26,10 @@ jobs:
           exit 1
         fi
 
-        if ! grep -q '<!-- GODOC_END -->' README.md; then
-          echo "Error: <!-- GODOC_END --> marker not found in README.md"
-          exit 1
-        fi
-
         go install github.com/robertkrimen/godocdown/godocdown@latest
         TEMPFILE=$(mktemp)
         echo "<!-- GODOC_START -->" > $TEMPFILE
         godocdown . >> $TEMPFILE
-        echo "<!-- GODOC_END -->" >> $TEMPFILE
     
     
         awk -v file="$TEMPFILE" \
