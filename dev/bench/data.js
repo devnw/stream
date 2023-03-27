@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1679915938445,
+  "lastUpdate": 1679917215071,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -2172,6 +2172,66 @@ window.BENCHMARK_DATA = {
             "value": 3847446,
             "unit": "ns/op",
             "extra": "393 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b501d6fc80cfd3caac9411c9b77c87947e656f6",
+          "message": "Merge pull request #17 from devnw/dependabot/github_actions/actions/setup-go-4\n\nBump actions/setup-go from 3 to 4",
+          "timestamp": "2023-03-27T07:39:42-04:00",
+          "tree_id": "d546f8e45c7fe150fa56e81e2e5e546cb6974592",
+          "url": "https://github.com/devnw/stream/commit/5b501d6fc80cfd3caac9411c9b77c87947e656f6"
+        },
+        "date": 1679917214507,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 495.3,
+            "unit": "ns/op",
+            "extra": "2415657 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 502.4,
+            "unit": "ns/op",
+            "extra": "2399883 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1637,
+            "unit": "ns/op",
+            "extra": "763866 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 2893,
+            "unit": "ns/op",
+            "extra": "413307 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 1586,
+            "unit": "ns/op",
+            "extra": "717910 times\n2 procs"
+          },
+          {
+            "name": "Benchmark_Scaler",
+            "value": 3520503,
+            "unit": "ns/op",
+            "extra": "398 times\n2 procs"
           }
         ]
       }
