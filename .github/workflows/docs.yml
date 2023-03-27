@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Fix workspace permissions
-      run: sudo chown -R $(id -u):$(id -g) /
+      run: sudo chown -R $(id -u):$(id -g) .
 
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
