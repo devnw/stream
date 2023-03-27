@@ -30,8 +30,13 @@ jobs:
           exit 1
         fi
     
+        if ! grep -q '<!-- GODOC_END -->' README.md; then
+          echo "Error: <!-- GODOC_END --> marker not found in README.md"
+          exit 1
+        fi
+    
         awk -v file="$TEMPFILE" \
-            '/<!-- GODOC_START -->/, /<!-- GODOC_END -->/ { if ($0 ~ /<!-- GODOC_END -->/) { while (getline < file) print } else { next } } 1' \
+            'BEGIN { show = 1 } /<!-- GODOC_START -->/ { show = 0; print; while (getline < file) print } /<!-- GODOC_END -->/ { show = 1; } show' \
             README.md > README.md.new
     
         mv README.md.new README.md
