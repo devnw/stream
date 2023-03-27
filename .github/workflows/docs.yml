@@ -45,4 +45,4 @@ jobs:
         body: "This PR updates the Go documentation in the README."
         branch: "update-go-documentation"
         base: "main"
-        labels: "documentation"
+        labels: "documentation,automerge"
