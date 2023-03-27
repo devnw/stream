@@ -36,8 +36,8 @@ jobs:
         fi
     
         awk -v file="$TEMPFILE" \
-            'BEGIN { show = 1 } /<!-- GODOC_START -->/ { show = 0; print; while (getline < file) print } /<!-- GODOC_END -->/ { show = 1; } show' \
-            README.md > README.md.new
+            '/<!-- GODOC_START -->/ { print; while (getline < file) print; next } 1' \
+            README.md | awk '/<!-- GODOC_END -->/ { p = 1 } p; /<!-- GODOC_START -->/ { p = 0 }' > README.md.new
     
         mv README.md.new README.md
 
