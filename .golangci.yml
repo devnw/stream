@@ -279,6 +279,9 @@ issues:
       linters: [ gocritic ]
     - source: "^\\s+if _, ok := err\\.\\([^.]+\\.InternalError\\); ok {"
       linters: [ errorlint ]
+    - path: "docs\\.go"
+      linters:
+        - lll
     - path: "_test\\.go"
       linters:
         - bodyclose

@@ -1,5 +1,3 @@
-// Package stream provides a set of generic functions for working concurrent
-// design patterns in Go.
 package stream
 
 import (
