@@ -8,4 +8,4 @@ jobs:
   update-readme:
     name: Update README with Go documentation
     uses: devnw/workflows/.github/workflows/docs.yml@main
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret

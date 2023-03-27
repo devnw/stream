@@ -9,4 +9,4 @@ jobs:
   lint-build-test:
     name: Lint, Build & Test
     uses: devnw/workflows/.github/workflows/build.yml@main
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
