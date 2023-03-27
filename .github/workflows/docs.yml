@@ -18,7 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - run: git config --system --add safe.directory '*'
+    - run: sudo git config --system --add safe.directory '*'
 
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
