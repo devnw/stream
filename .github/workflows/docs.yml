@@ -19,32 +19,20 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Generate Go documentation and update README
-      run: |
-        if ! grep -q '<!-- GODOC_START -->' README.md; then
-          echo "Error: <!-- GODOC_START --> marker not found in README.md"
-          exit 1
-        fi
-
-        go install github.com/robertkrimen/godocdown/godocdown@latest
-        TEMPFILE=$(mktemp)
-        echo "<!-- GODOC_START -->" > $TEMPFILE
-        godocdown . >> $TEMPFILE
-    
-    
-        awk -v file="$TEMPFILE" \
-            '/<!-- GODOC_START -->/, /<!-- GODOC_END -->/ { if ($0 ~ /<!-- GODOC_END -->/) { while (getline < file) print } else { next } } 1' \
-            README.md > README.md.new
-    
-        mv README.md.new README.md
-
-    - name: Create or update pull request
-      uses: peter-evans/create-pull-request@v4
+    - name: Update readme according to Go doc
+      uses: posener/goreadme@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "docs(README.md): update go documentation"
-        title: "Update Go documentation in README"
-        body: "This PR updates the Go documentation in the README."
-        branch: "update-go-documentation"
-        base: "main"
-        labels: "documentation,automerge"
+        email: "<41898282+github-actions[bot]@users.noreply.github.com>"
+        recursive: true
+        constants: true
+        variabless: true
+        functions: true
+        types: true
+        factories: true
+        badge-codecov: 'true'
+        badge-godoc: 'true'
+        badge-goreadme: 'true'
+        badge-goreportcard: 'true'
+        author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+        # Optional: Token allows goreadme to comment the PR with diff preview.
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
