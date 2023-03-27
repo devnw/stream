@@ -17,9 +17,8 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-
-    - run: sudo git config --system --add safe.directory '*'
-
+    - name: Change owner of container working directory
+      run: chown root:root .
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
       with:
