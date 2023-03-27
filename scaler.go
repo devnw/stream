@@ -21,6 +21,7 @@ import (
 // of the Scaler.
 //
 // NOTE: Fn is REQUIRED!
+// Defaults: Wait = 1ns, Life = 1µs
 //
 // After creating the Scaler instance and configuring it, call the Exec method
 // passing the appropriate context and input channel.
