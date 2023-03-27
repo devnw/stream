@@ -16,10 +16,8 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
 
-    - name: Fix Git repository permissions
-      run: git config --global --add safe.directory $GITHUB_WORKSPACE
     - name: Fix workspace permissions
-      run: sudo chown -R $(id -u):$(id -g) $GITHUB_WORKSPACE
+      run: sudo chown -R $(id -u):$(id -g) /
 
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
