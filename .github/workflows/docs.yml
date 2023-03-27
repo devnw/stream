@@ -4,31 +4,8 @@ on:
   push:
     branches:
       - main
-
 jobs:
   update-readme:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: 1.19
-
-    - name: Generate Go documentation and update README
-      run: |
-        go install github.com/robertkrimen/godocdown/godocdown@latest
-        godocdown . > README.md
-
-    - name: Create or update pull request
-      uses: peter-evans/create-pull-request@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "docs(README.md): update go documentation"
-        title: "Update Go documentation in README"
-        body: "This PR updates the Go documentation in the README."
-        branch: "update-go-documentation"
-        base: "main"
-        labels: "documentation,automerge"
+    name: Update README with Go documentation
+    uses: devnw/workflows/.github/workflows/docs.yml@main
+    secrets: inherit

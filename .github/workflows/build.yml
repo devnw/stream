@@ -1,64 +1,12 @@
-name: Build & Test
+name: Lint, Build & Test
 
-# this is triggered on push to the repository
 on: [push, pull_request]
 
+env:
+  GH_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
-  build:
-    name: "Build"
-    strategy:
-      matrix:
-        go-version: [1.19.x]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-      fail-fast: true
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Build
-        run: go build ./...
-  test:
-    name: "Unit Tests"
-    needs: [build]
-    strategy:
-      matrix:
-        go-version: [1.19.x]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-      fail-fast: true
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Fuzz
-        run: go test -fuzz=./... -fuzztime=10s
-      - name: Test
-        run: go test -failfast ./... -race -coverprofile=coverage.txt -covermode=atomic
-      - name: Push Coverage to codecov.io
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.txt
-  pre-release:
-    name: "Pre Release"
-    if: github.ref == 'refs/heads/main'
-    runs-on: "ubuntu-latest"
-    needs: [build, test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "dev"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            LICENSE
+  lint-build-test:
+    name: Lint, Build & Test
+    uses: devnw/workflows/.github/workflows/build.yml@main
+    secrets: inherit
