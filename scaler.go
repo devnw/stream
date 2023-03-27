@@ -55,7 +55,7 @@ var ErrFnRequired = fmt.Errorf("nil InterceptFunc, Fn is required")
 // returns the output channel where the resulting data from the Fn function
 // will be sent.
 //
-//nolint:funlen // This really can't be broken up any further
+//nolint:funlen,gocognit // This really can't be broken up any further
 func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 	ctx = _ctx(ctx)
 
