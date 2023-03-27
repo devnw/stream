@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+// MinWait is the absolute minimum wait time for the ticker. This is used to
+// prevent the ticker from firing too often and causing too small of a wait
+// time.
+const MinWait = time.Millisecond
+
+// MinLife is the minimum life time for the scaler. This is used to prevent
+// the scaler from exiting too quickly, and causing too small of a lifetime.
+const MinLife = time.Millisecond
+
 // Scaler implements generic auto-scaling logic which starts with a net-zero
 // set of processing routines (with the exception of the channel listener) and
 // then scales up and down based on the CPU contention of a system and the speed
@@ -44,7 +53,7 @@ type Scaler[T, U any] struct {
 
 	// Max is the maximum number of layer2 routines that will be spawned.
 	// If Max is set to 0, then there is no limit.
-	Max int
+	Max uint
 
 	wScale *DurationScaler
 }
@@ -76,13 +85,13 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 	// because the caller did not specify a wait time. This means Scaler will
 	// likely always scale up rather than waiting for an existing layer2 routine
 	// to pick up data.
-	if s.Wait <= 0 {
-		s.Wait = time.Nanosecond
+	if s.Wait <= MinWait {
+		s.Wait = MinWait
 	}
 
 	// Minimum life of a spawned layer2 should be 1ms
-	if s.Life < time.Microsecond {
-		s.Life = time.Microsecond
+	if s.Life < MinLife {
+		s.Life = MinLife
 	}
 
 	go func() {
@@ -103,13 +112,14 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 		ticker := time.NewTicker(s.Wait)
 		defer ticker.Stop()
 		step := 0
+		stepMu := sync.RWMutex{}
 
 		var max chan struct{}
 
 		if s.Max > 0 {
 			max = make(chan struct{}, s.Max)
-			if s.Max == 0 {
-				close(max) // no limit
+			for i := uint(0); i < s.Max; i++ {
+				max <- struct{}{}
 			}
 		}
 
@@ -129,7 +139,7 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 					case <-ctx.Done():
 						return
 					case <-ticker.C:
-						if s.Max != 0 {
+						if max != nil {
 							select {
 							case <-ctx.Done():
 								return
@@ -145,7 +155,9 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 						wgMu.Unlock()
 
 						if !s.WaitModifier.inactive() {
+							stepMu.Lock()
 							step++
+							stepMu.Unlock()
 						}
 
 						go func() {
@@ -162,7 +174,9 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 
 							if !s.WaitModifier.inactive() {
 								defer func() {
+									stepMu.Lock()
 									step--
+									stepMu.Unlock()
 								}()
 							}
 
@@ -173,9 +187,16 @@ func (s Scaler[T, U]) Exec(ctx context.Context, in <-chan T) (<-chan U, error) {
 					}
 				}
 
+				stepN := 0
+				if !s.WaitModifier.inactive() {
+					stepMu.RLock()
+					stepN = step
+					stepMu.RUnlock()
+				}
+
 				// Reset the ticker so that it does not immediately trip the
 				// case statement on loop.
-				ticker.Reset(s.wScale.scaledDuration(s.Wait, step))
+				ticker.Reset(s.wScale.scaledDuration(s.Wait, stepN))
 			}
 		}
 	}()
@@ -288,6 +309,10 @@ func (t *DurationScaler) scaledDuration(
 	dur time.Duration,
 	currentInterval int,
 ) time.Duration {
+	if dur < MinWait {
+		dur = MinWait
+	}
+
 	if t.inactive() {
 		return dur
 	}
@@ -299,7 +324,12 @@ func (t *DurationScaler) scaledDuration(
 
 	if currentInterval%t.Interval == 0 {
 		t.lastInterval = currentInterval
-		return dur + time.Duration(float64(t.originalDuration)*mod)
+		out := dur + time.Duration(float64(t.originalDuration)*mod)
+		if out < MinWait {
+			return MinWait
+		}
+
+		return out
 	}
 
 	return dur

@@ -2,6 +2,7 @@ package stream
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -391,7 +392,75 @@ func TestTickDur(t *testing.T) {
 
 func FuzzTick(f *testing.F) {
 	f.Fuzz(func(t *testing.T, step, cStep int, mod float64, orig, dur int64) {
-		tick := &DurationScaler{Interval: step, ScalingFactor: mod, originalDuration: time.Duration(orig)}
-		_ = tick.scaledDuration(time.Duration(dur), cStep)
+		tick := &DurationScaler{
+			Interval:         step,
+			ScalingFactor:    mod,
+			originalDuration: time.Duration(orig),
+		}
+
+		v := tick.scaledDuration(time.Duration(dur), cStep)
+		if v < 0 {
+			t.Fatalf("negative duration: %v", v)
+		}
+	})
+}
+
+func FuzzScaler(f *testing.F) {
+	// Define InterceptFunc
+	interceptFunc := func(ctx context.Context, t int) (string, bool) {
+		return fmt.Sprintf("%d", t), true
+	}
+
+	f.Fuzz(func(
+		t *testing.T,
+		wait, life int64,
+		step, cStep int,
+		mod float64,
+		max uint,
+		in int,
+	) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		tick := DurationScaler{
+			Interval:      step,
+			ScalingFactor: mod,
+		}
+
+		// Initialize Scaler
+		scaler := Scaler[int, string]{
+			Wait:         time.Millisecond * time.Duration(wait),
+			Life:         time.Millisecond * time.Duration(life),
+			Fn:           interceptFunc,
+			WaitModifier: tick,
+			Max:          max,
+		}
+
+		// Create a simple input channel
+		input := make(chan int, 1)
+		defer close(input)
+
+		// Execute the Scaler
+		out, err := scaler.Exec(ctx, input)
+		if err != nil {
+			t.Errorf("Scaler Exec failed: %v", err)
+			t.Fail()
+		}
+
+		// Send input value and check output
+		input <- in
+
+		select {
+		case <-ctx.Done():
+			t.Errorf("Scaler Exec timed out")
+			t.Fail()
+		case res := <-out:
+			if res != fmt.Sprintf("%d", in) {
+				t.Errorf("Scaler Exec failed: expected %d, got %s", in, res)
+				t.Fail()
+			}
+
+			t.Logf("Scaler Exec succeeded: expected %d, got %s", in, res)
+		}
 	})
 }
