@@ -37,4 +37,3 @@ be seen on our [Benchmark Report Card].
 
 [Benchmark Report Card]: https://devnw.github.io/stream/dev/bench/
 
-<!-- GODOC_START -->
