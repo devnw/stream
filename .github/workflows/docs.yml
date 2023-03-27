@@ -19,7 +19,7 @@ jobs:
 
     - name: Generate Go documentation and update README
       run: |
-        go install github.com/robertkrimen/godocdown/godocdown
+        go install github.com/robertkrimen/godocdown/godocdown@latest
         godocdown . > README.md
 
     - name: Create or update pull request
