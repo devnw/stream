@@ -1,0 +1,45 @@
+name: Update README with Go documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+
+    - name: Generate Go documentation and update README
+      run: |
+        go install github.com/robertkrimen/godocdown/godocdown@latest
+        TEMPFILE=$(mktemp)
+        godocdown . > $TEMPFILE
+
+        if ! grep -q '<!-- GODOC_START -->' README.md; then
+          echo "Error: <!-- GODOC_START --> marker not found in README.md"
+          exit 1
+        fi
+
+        awk -v file="$TEMPFILE" \
+            '/<!-- GODOC_START -->/ {print; while (getline < file) print; next} 1' \
+            README.md > README.md.new
+
+        mv README.md.new README.md
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add README.md
+        git diff --quiet && git diff --staged --quiet || git commit -m "docs(README.md): update go documentation"
+        git push

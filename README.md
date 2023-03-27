@@ -30,3 +30,5 @@ To view benchmarks over time for the `main` branch of the repository they can
 be seen on our [Benchmark Report Card].
 
 [Benchmark Report Card]: https://devnw.github.io/stream/dev/bench/
+
+<!-- GODOC_START -->
