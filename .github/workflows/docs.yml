@@ -18,7 +18,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Change owner of container working directory
-      run: chown root:root .
+      run: sudo chown root:root .
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
       with:
