@@ -2,8 +2,12 @@ name: Update README with Go documentation
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  pull-requests: write
+  contents: write
 
 jobs:
   update-readme:
@@ -12,30 +16,16 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
+    - name: Update readme according to Go doc
+      uses: posener/goreadme@v1
       with:
-        go-version: 1.20
-
-    - name: Generate Go documentation and update README
-      run: |
-        go install github.com/posener/goreadme/cmd/goreadme@latest
-
-        goreadme --recursive=true \
-          --credit=false \
-          --constants=true \
-          --functions=true \
-          --types=true \
-          --factories \
-          --variabless=true > README.md
-
-    - name: Create or update pull request
-      uses: peter-evans/create-pull-request@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "docs(README.md): update go documentation"
-        title: "Update Go documentation in README"
-        body: "This PR updates the Go documentation in the README."
-        branch: "update-go-documentation"
-        base: "main"
-        labels: "documentation,automerge"
+        email: "41898282+github-actions[bot]@users.noreply.github.com"
+        recursive: true
+        constants: true
+        variabless: true
+        functions: true
+        types: true
+        factories: true
+        credit: false
+        # Optional: Token allows goreadme to comment the PR with diff preview.
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
