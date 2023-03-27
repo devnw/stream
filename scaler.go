@@ -38,7 +38,7 @@ type Scaler[T, U any] struct {
 
 	// WaitModifier is used to modify the Wait time based on the number of
 	// times the Scaler has scaled up. This is useful for systems
-	// that are CPU bound and need to scale up more quickly.
+	// that are CPU bound and need to scale up more/less quickly.
 	WaitModifier DurationScaler
 
 	wScale *DurationScaler
@@ -225,6 +225,17 @@ type DurationScaler struct {
 	// ScalingFactor is a value between -1 and 1 that is used to modify the
 	// time.Duration of a ticker or timer. The value is multiplied by
 	// the ScalingFactor is multiplied by the duration for scaling.
+	//
+	// For example, if the ScalingFactor is 0.5, then the duration will be
+	// multiplied by 0.5. If the ScalingFactor is -0.5, then the duration will
+	// be divided by 0.5. If the ScalingFactor is 0, then the duration will
+	// not be modified.
+	//
+	// A negative ScalingFactor will cause the duration to decrease as the
+	// step value increases causing the ticker or timer to fire more often
+	// and create more routines. A positive ScalingFactor will cause the
+	// duration to increase as the step value increases causing the ticker
+	// or timer to fire less often and create less routines.
 	ScalingFactor float64
 
 	// originalDuration is the time.Duration that was passed to the
