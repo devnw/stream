@@ -10,6 +10,7 @@ import (
 
 // Pipe accepts an incoming data channel and pipes it to the supplied
 // outgoing data channel.
+// is this
 //
 // NOTE: Execute the Pipe function in a goroutine if parallel execution is
 // desired. Canceling the context or closing the incoming channel is important
