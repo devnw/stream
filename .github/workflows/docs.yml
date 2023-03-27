@@ -21,23 +21,26 @@ jobs:
 
     - name: Generate Go documentation and update README
       run: |
-        go install github.com/robertkrimen/godocdown/godocdown@latest
-        TEMPFILE=$(mktemp)
-        godocdown . > $TEMPFILE
-    
         if ! grep -q '<!-- GODOC_START -->' README.md; then
           echo "Error: <!-- GODOC_START --> marker not found in README.md"
           exit 1
         fi
-    
+
         if ! grep -q '<!-- GODOC_END -->' README.md; then
           echo "Error: <!-- GODOC_END --> marker not found in README.md"
           exit 1
         fi
+
+        go install github.com/robertkrimen/godocdown/godocdown@latest
+        TEMPFILE=$(mktemp)
+        echo "<!-- GODOC_START -->" > $TEMPFILE
+        godocdown . >> $TEMPFILE
+        echo "<!-- GODOC_END -->" >> $TEMPFILE
+    
     
         awk -v file="$TEMPFILE" \
-            '/<!-- GODOC_START -->/ { print; while (getline < file) print; next } 1' \
-            README.md | awk '/<!-- GODOC_END -->/ { p = 1 } p; /<!-- GODOC_START -->/ { p = 0 }' > README.md.new
+            '/<!-- GODOC_START -->/, /<!-- GODOC_END -->/ { if ($0 ~ /<!-- GODOC_END -->/) { while (getline < file) print } else { next } } 1' \
+            README.md > README.md.new
     
         mv README.md.new README.md
 
