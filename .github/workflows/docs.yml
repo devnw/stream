@@ -18,9 +18,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Configure safe directory for Git
-      run: git config --global --add safe.directory /github/workspace
-
     - name: Update readme according to Go doc
       uses: posener/goreadme@v1
       with:
@@ -33,6 +30,7 @@ jobs:
         badge-codecov: 'true'
         badge-godoc: 'true'
         badge-goreportcard: 'true'
+        image: 'golang:latest'
         email: "41898282+github-actions[bot]@users.noreply.github.com"
         # Optional: Token allows goreadme to comment the PR with diff preview.
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
