@@ -379,6 +379,30 @@ func TestTickDur(t *testing.T) {
 			currentStep: 2,
 			expected:    10 * time.Second,
 		},
+		{
+			name: "Test case 7: testing below minwait",
+			tick: DurationScaler{
+				Interval:         1,
+				ScalingFactor:    -0.999,
+				originalDuration: time.Millisecond * 2,
+				lastInterval:     0,
+			},
+			duration:    MinWait,
+			currentStep: 1,
+			expected:    MinWait,
+		},
+		{
+			name: "Test case 8: testing below minwait",
+			tick: DurationScaler{
+				Interval:         1,
+				ScalingFactor:    -0.999,
+				originalDuration: time.Millisecond * 900,
+				lastInterval:     0,
+			},
+			duration:    MinWait,
+			currentStep: 1,
+			expected:    MinWait,
+		},
 	}
 
 	for _, tc := range testCases {
