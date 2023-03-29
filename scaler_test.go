@@ -2,6 +2,8 @@ package stream
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -377,6 +379,30 @@ func TestTickDur(t *testing.T) {
 			currentStep: 2,
 			expected:    10 * time.Second,
 		},
+		{
+			name: "Test case 7: testing below minwait",
+			tick: DurationScaler{
+				Interval:         1,
+				ScalingFactor:    -0.999,
+				originalDuration: time.Millisecond * 2,
+				lastInterval:     0,
+			},
+			duration:    MinWait,
+			currentStep: 1,
+			expected:    MinWait,
+		},
+		{
+			name: "Test case 8: testing below minwait",
+			tick: DurationScaler{
+				Interval:         1,
+				ScalingFactor:    -0.999,
+				originalDuration: time.Millisecond * 900,
+				lastInterval:     0,
+			},
+			duration:    MinWait,
+			currentStep: 1,
+			expected:    MinWait,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -391,7 +417,200 @@ func TestTickDur(t *testing.T) {
 
 func FuzzTick(f *testing.F) {
 	f.Fuzz(func(t *testing.T, step, cStep int, mod float64, orig, dur int64) {
-		tick := &DurationScaler{Interval: step, ScalingFactor: mod, originalDuration: time.Duration(orig)}
-		_ = tick.scaledDuration(time.Duration(dur), cStep)
+		tick := &DurationScaler{
+			Interval:         step,
+			ScalingFactor:    mod,
+			originalDuration: time.Duration(orig),
+		}
+
+		v := tick.scaledDuration(time.Duration(dur), cStep)
+		if v < 0 {
+			t.Fatalf("negative duration: %v", v)
+		}
 	})
+}
+
+func FuzzScaler(f *testing.F) {
+	interceptFunc := func(ctx context.Context, t int) (string, bool) {
+		return fmt.Sprintf("%d", t), true
+	}
+
+	f.Fuzz(func(
+		t *testing.T,
+		wait, life int64,
+		step, cStep int,
+		mod float64,
+		max uint,
+		in int,
+	) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		tick := DurationScaler{
+			Interval:      step,
+			ScalingFactor: mod,
+		}
+
+		// Initialize Scaler
+		scaler := Scaler[int, string]{
+			Wait:         time.Millisecond * time.Duration(wait),
+			Life:         time.Millisecond * time.Duration(life),
+			Fn:           interceptFunc,
+			WaitModifier: tick,
+			Max:          max,
+		}
+
+		// Create a simple input channel
+		input := make(chan int, 1)
+		defer close(input)
+
+		// Execute the Scaler
+		out, err := scaler.Exec(ctx, input)
+		if err != nil {
+			t.Errorf("Scaler Exec failed: %v", err)
+			t.Fail()
+		}
+
+		// Send input value and check output
+		input <- in
+
+		select {
+		case <-ctx.Done():
+			t.Errorf("Scaler Exec timed out")
+			t.Fail()
+		case res := <-out:
+			if res != fmt.Sprintf("%d", in) {
+				t.Errorf("Scaler Exec failed: expected %d, got %s", in, res)
+				t.Fail()
+			}
+
+			t.Logf("Scaler Exec succeeded: expected %d, got %s", in, res)
+		}
+	})
+}
+
+func Test_Scaler_Max(t *testing.T) {
+	tests := map[string]struct {
+		max      uint
+		send     int
+		expected int
+	}{
+		"max 0": {
+			max:      0,
+			send:     1000,
+			expected: 1000,
+		},
+		"max 1": {
+			max:      1,
+			send:     10,
+			expected: 10,
+		},
+		"max 2": {
+			max:      2,
+			send:     10,
+			expected: 10,
+		},
+		"max 3": {
+			max:      3,
+			send:     10,
+			expected: 10,
+		},
+		"max 4": {
+			max:      4,
+			send:     100,
+			expected: 100,
+		},
+		"max 1000": {
+			max:      1000,
+			send:     10000,
+			expected: 10000,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			inited := 0
+			initedMu := sync.Mutex{}
+			release := make(chan struct{})
+
+			interceptFunc := func(ctx context.Context, t int) (int, bool) {
+				defer func() {
+					initedMu.Lock()
+					defer initedMu.Unlock()
+					inited--
+				}()
+
+				initedMu.Lock()
+				inited++
+				initedMu.Unlock()
+
+				<-release
+
+				return t, true
+			}
+
+			// Initialize Scaler
+			scaler := Scaler[int, int]{
+				Wait: time.Millisecond,
+				Life: time.Millisecond,
+				Fn:   interceptFunc,
+				Max:  test.max,
+			}
+
+			// Create a simple input channel
+			input := make(chan int, test.send)
+			defer close(input)
+
+			for i := 0; i < test.send; i++ {
+				input <- i
+			}
+
+			// Execute the Scaler
+			out, err := scaler.Exec(ctx, input)
+			if err != nil {
+				t.Errorf("Scaler Exec failed: %v", err)
+				t.Fail()
+			}
+
+			recv := 1
+
+		tloop:
+			for {
+				select {
+				case <-ctx.Done():
+					t.Errorf("Scaler Exec timed out")
+				case _, ok := <-out:
+					if !ok {
+						break tloop
+					}
+
+					recv++
+					t.Logf("received %d", recv)
+					if recv >= test.expected {
+						break tloop
+					}
+				default:
+					time.Sleep(time.Millisecond)
+
+					initedMu.Lock()
+					if test.max > 0 && inited > int(test.max) {
+						t.Errorf("Scaler Exec failed: expected %d, got %d", test.max, inited)
+						t.Fail()
+					}
+					initedMu.Unlock()
+
+					// Release one goroutine
+					release <- struct{}{}
+				}
+			}
+
+			if recv != test.expected {
+				t.Errorf("Scaler Exec failed: expected %d, got %d", test.expected, recv)
+				t.Fail()
+			}
+		})
+	}
 }
