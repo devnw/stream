@@ -41,6 +41,18 @@ seen on our [Benchmark Report Card].
 ## Usage
 
 ```go
+const MinLife = time.Millisecond
+```
+MinLife is the minimum life time for the scaler. This is used to prevent the
+scaler from exiting too quickly, and causing too small of a lifetime.
+
+```go
+const MinWait = time.Millisecond
+```
+MinWait is the absolute minimum wait time for the ticker. This is used to
+prevent the ticker from firing too often and causing too small of a wait time.
+
+```go
 var ErrFnRequired = fmt.Errorf("nil InterceptFunc, Fn is required")
 ```
 
@@ -177,6 +189,10 @@ type Scaler[T, U any] struct {
 	// times the Scaler has scaled up. This is useful for systems
 	// that are CPU bound and need to scale up more/less quickly.
 	WaitModifier DurationScaler
+
+	// Max is the maximum number of layer2 routines that will be spawned.
+	// If Max is set to 0, then there is no limit.
+	Max uint
 }
 ```
 
