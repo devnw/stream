@@ -21,7 +21,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
           stable: false
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run benchmark
         run: go test -bench=. ./... | tee output.txt
       - name: Download previous benchmark data
