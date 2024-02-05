@@ -2,7 +2,7 @@ exclude: '^package.json|package-lock.json|.*?\.tsv$'
 fail_fast: true 
 repos:
 -   repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.42.1
+    rev: v3.14.1
     hooks:
         - id: commitizen
           stages: [commit-msg]
@@ -14,7 +14,7 @@ repos:
         exclude: package.lock.json
         stages: [commit]
 -   repo: https://github.com/golangci/golangci-lint
-    rev: v1.52.2
+    rev: v1.55.2
     hooks:
     -   id: golangci-lint
         stages: [commit]
@@ -24,7 +24,7 @@ repos:
       - id: go-unit-tests
         stages: [commit]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-json
         stages: [commit]
@@ -39,18 +39,18 @@ repos:
     -   id: check-yaml
         stages: [commit]
 -   repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.33.0
+    rev: v0.39.0
     hooks:
     -   id: markdownlint-fix
         stages: [commit]
         args: ["--ignore", "README.md"] # This is a generated file
 -   repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.2
+    rev: v0.9.0.6
     hooks:
     -   id: shellcheck
         stages: [commit]
 -   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v8.36.0'
+    rev: 'v9.0.0-alpha.2'
     hooks:
     -   id: eslint
         stages: [commit]

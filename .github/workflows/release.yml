@@ -7,32 +7,43 @@ on:
 
 jobs:
   build:
-    name: "Build & Unit Tests"
+    name: Make Build
     strategy:
       matrix:
-        go-version: [1.19.x]
         platform: [ubuntu-latest, macos-latest, windows-latest]
       fail-fast: true
-    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ vars.GO_VERSION }}
           stable: false
+
       - name: Build
-        run: go build ./...
-      - name: Test
-        run: go test -race -failfast ./...
+        run: make build-ci
+
+      - name: Upload Test Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage.txt
+
+      - name: Upload Fuzz Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: fuzz-results
+          path: testdata/fuzz
+
   release:
     needs: [build]
     name: "Tagged Release"
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create Github Release from Tag
         uses: "marvinpinto/action-automatic-releases@latest"
         with:

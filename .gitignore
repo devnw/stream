@@ -1,5 +1,6 @@
 # Removing Vendor
 vendor/
+.venv
 
 .vscode/
 
@@ -24,3 +25,5 @@ coverage.html
 
 # ignore mac files
 .DS_Store
+coverage.txt
+
