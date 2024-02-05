@@ -36,7 +36,8 @@ fuzz:
 		done; \
 	done
 
-
+bench:
+	go test -bench=. -benchmem ./...
 
 lint: tidy
 	golangci-lint run
@@ -80,6 +81,8 @@ test-ci: deps tidy lint
 build-ci: test-ci
 	$(env) go build ./...
 
+bench-ci: test-ci
+	go test -bench=. ./... | tee output.txt
 
 release-ci: build-ci
 	goreleaser release --rm-dist	

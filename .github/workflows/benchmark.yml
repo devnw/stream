@@ -8,37 +8,11 @@ permissions:
   contents: write
   deployments: write
 
+env:
+  GH_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
   benchmark:
     name: Execute Benchmarks
-    strategy:
-      matrix:
-        go-version: [1.19.x]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-          stable: false
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Run benchmark
-        run: go test -bench=. ./... | tee output.txt
-      - name: Download previous benchmark data
-        uses: actions/cache@v3
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: Benchmark Results
-          tool: 'go'
-          output-file-path: output.txt
-          benchmark-data-dir-path: dev/bench
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: true
-          alert-comment-cc-users: '@benjivesterby'
+    uses: devnw/workflows/.github/workflows/make-bench.yml@main
+    secrets: inherit # pragma: allowlist secret

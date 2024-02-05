@@ -4,50 +4,11 @@ on:
   push:
     tags:
       - "v*"
+env:
+  GH_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
 
 jobs:
-  build:
-    name: Make Build
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-      fail-fast: true
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ vars.GO_VERSION }}
-          stable: false
-
-      - name: Build
-        run: make build-ci
-
-      - name: Upload Test Coverage
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage
-          path: coverage.txt
-
-      - name: Upload Fuzz Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: fuzz-results
-          path: testdata/fuzz
-
   release:
-    needs: [build]
-    name: "Tagged Release"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Create Github Release from Tag
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          files: |
-            LICENSE
+    name: Tagged Release
+    uses: devnw/workflows/.github/workflows/make-release.yml@main
+    secrets: inherit # pragma: allowlist secret
