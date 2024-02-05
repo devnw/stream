@@ -47,7 +47,6 @@ build: update upgrade tidy lint test
 	$(env) go build ./...
 
 release-dev: build-ci
-	goreleaser release --rm-dist --snapshot
 
 upgrade:
 	$(pyenv)/pre-commit autoupdate
@@ -84,8 +83,7 @@ build-ci: test-ci
 bench-ci: test-ci
 	go test -bench=. ./... | tee output.txt
 
-release-ci: build-ci
-	goreleaser release --rm-dist	
+release-ci: build-ci	
 
 #-------------------------------------------------------------------------
 # Force targets
