@@ -91,8 +91,8 @@ tag:
 	read -p "Enter the version number [$$default_version]: " version; \
 	version=$${version:-$$default_version}; \
 	commits=$$(git log $$latest_tag..HEAD --pretty=format:"%h %s" | awk '{print "- " $$0}'); \
-	git tag -a v$$version -m "Release v$$version" -m "$$commits"; \
-	git push origin v$$version
+	git tag -a $$version -m "Release $$version" -m "$$commits"; \
+	git push origin $$version
 
 #-------------------------------------------------------------------------
 # CI targets
