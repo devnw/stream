@@ -1,15 +1,11 @@
+version: 1
+
 builds:
   - skip: true
-
-snapshot:
-  name_template: "{{ incpatch .Version }}-{{ .ShortCommit }}"
 
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-
-release:
-  prerelease: auto
+      - "^docs:"
+      - "^test:"
