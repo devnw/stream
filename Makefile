@@ -110,6 +110,9 @@ build-ci:
 bench-ci: build-ci
 	go test -bench=. ./... | tee output.txt
 
+debug-release-ci: build-ci
+	GITHUB_TOKEN=$(shell gh auth token) goreleaser release 
+
 release-ci: build-ci	
 	goreleaser release
 
@@ -117,7 +120,7 @@ test-ci:
 	DOCKER_HOST=$(shell docker context inspect --format='{{json .Endpoints.docker.Host}}' $(shell docker context show)) \
 				$(opact) act \
 					-s GIT_CREDENTIALS \
-					-s GITHUB_TOKEN="$(gh auth token)" \
+					-s GITHUB_TOKEN="$(shell gh auth token)" \
 					--var GO_VERSION \
 					--var ALERT_CC_USERS \
 
