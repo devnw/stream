@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707693413999,
+  "lastUpdate": 1707693814250,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -4512,6 +4512,66 @@ window.BENCHMARK_DATA = {
             "value": 3101900,
             "unit": "ns/op",
             "extra": "381 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "75ccc91489b79949536187d2c7045ba82d9db1cf",
+          "message": "fix: remove checksum file ref in goreleaser config",
+          "timestamp": "2024-02-11T18:21:37-05:00",
+          "tree_id": "7a4eecbf5d52579a9d409df0d842f21bd0ffed1e",
+          "url": "https://github.com/devnw/stream/commit/75ccc91489b79949536187d2c7045ba82d9db1cf"
+        },
+        "date": 1707693813294,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 354,
+            "unit": "ns/op",
+            "extra": "3405039 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 349.6,
+            "unit": "ns/op",
+            "extra": "3424429 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1348,
+            "unit": "ns/op",
+            "extra": "878706 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 2000,
+            "unit": "ns/op",
+            "extra": "569066 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 1051,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Scaler",
+            "value": 3126083,
+            "unit": "ns/op",
+            "extra": "380 times\n4 procs"
           }
         ]
       }
