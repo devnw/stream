@@ -56,7 +56,7 @@ build: update upgrade tidy lint test
 	$(env) go build ./...
 
 release: build-ci
-	goreleaser release --snapshot --rm-dist
+	goreleaser release --snapshot --clean
 
 upgrade:
 	$(pyenv)/pre-commit autoupdate
@@ -110,11 +110,8 @@ build-ci: deps
 bench-ci: build-ci
 	go test -bench=. ./... | tee output.txt
 
-debug-release-ci: build-ci
-	GITHUB_TOKEN=$(shell gh auth token) goreleaser release 
-
 release-ci: build-ci	
-	goreleaser release --rm-dist
+	goreleaser release --clean
 
 test-ci: 
 	DOCKER_HOST=$(shell docker context inspect --format='{{json .Endpoints.docker.Host}}' $(shell docker context show)) \
