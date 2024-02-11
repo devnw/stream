@@ -489,6 +489,7 @@ func FuzzScaler(f *testing.F) {
 	})
 }
 
+//nolint:gocognit // This is a test function
 func Test_Scaler_Max(t *testing.T) {
 	tests := map[string]struct {
 		max      uint

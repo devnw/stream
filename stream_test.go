@@ -338,6 +338,7 @@ func Test_FanOut_Canceled_On_Wait(_ *testing.T) {
 	FanOut(ctx, in, out)
 }
 
+//nolint:gocognit // This is a test function
 func DistributeTest[U ~[]T, T comparable](
 	t *testing.T,
 	name string,
