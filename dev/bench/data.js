@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707163027266,
+  "lastUpdate": 1707691940104,
   "repoUrl": "https://github.com/devnw/stream",
   "entries": {
     "Benchmark Results": [
@@ -4272,6 +4272,66 @@ window.BENCHMARK_DATA = {
             "value": 3149709,
             "unit": "ns/op",
             "extra": "384 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "committer": {
+            "email": "benji@devnw.com",
+            "name": "Benji Vesterby",
+            "username": "benjivesterby"
+          },
+          "distinct": true,
+          "id": "ae648e38e8a9f51b46ed5f0227a2aea210b1d524",
+          "message": "feat: adding act testing support and goreleaser",
+          "timestamp": "2024-02-11T17:50:17-05:00",
+          "tree_id": "fa1a0d9bee4dc035baace2012631127b53cd3a89",
+          "url": "https://github.com/devnw/stream/commit/ae648e38e8a9f51b46ed5f0227a2aea210b1d524"
+        },
+        "date": 1707691939167,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "Benchmark_Pipe",
+            "value": 347.4,
+            "unit": "ns/op",
+            "extra": "3469932 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Intercept",
+            "value": 350.5,
+            "unit": "ns/op",
+            "extra": "3448812 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_FanIn",
+            "value": 1360,
+            "unit": "ns/op",
+            "extra": "881922 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_FanOut",
+            "value": 1938,
+            "unit": "ns/op",
+            "extra": "566028 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Distribute",
+            "value": 1032,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "Benchmark_Scaler",
+            "value": 3152508,
+            "unit": "ns/op",
+            "extra": "378 times\n4 procs"
           }
         ]
       }
