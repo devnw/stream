@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync"
 
-	"go.structs.dev/gen"
+	"go.devnw.com/gen"
 )
 
 // Pipe accepts an incoming data channel and pipes it to the supplied

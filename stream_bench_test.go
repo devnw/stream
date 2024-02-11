@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"go.structs.dev/gen"
+	"go.devnw.com/gen"
 )
 
 func Benchmark_Pipe(b *testing.B) {

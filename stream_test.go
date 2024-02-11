@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"go.structs.dev/gen"
+	"go.devnw.com/gen"
 )
 
 func PipeTest[U ~[]T, T comparable](

@@ -1,2 +1,2 @@
-go.structs.dev/gen v1.0.1 h1:tp81qXTWF61tgmyCVqBBdQcEMp9Ftlo5/ekkm+wVkYk=
-go.structs.dev/gen v1.0.1/go.mod h1:Y1KXGuqAQdeL0G485oZzpgVwVZ4x+/7/ViNdQJuINo4=
+go.devnw.com/gen v1.1.0 h1:VaUsFJUQycvx10g5ljrSilQYkCicIpOzRetcgR11u2g=
+go.devnw.com/gen v1.1.0/go.mod h1:osGISydOxdvHZvg/+XMyCm9gjxSqYyRzSXtSUVeGx3A=

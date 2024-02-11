@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"go.structs.dev/gen"
+	"go.devnw.com/gen"
 )
 
 var emptyFn = func(context.Context, any) (any, bool) { return 0, true }
