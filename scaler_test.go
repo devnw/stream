@@ -431,14 +431,14 @@ func FuzzTick(f *testing.F) {
 }
 
 func FuzzScaler(f *testing.F) {
-	interceptFunc := func(ctx context.Context, t int) (string, bool) {
+	interceptFunc := func(_ context.Context, t int) (string, bool) {
 		return fmt.Sprintf("%d", t), true
 	}
 
 	f.Fuzz(func(
 		t *testing.T,
 		wait, life int64,
-		step, cStep int,
+		step, _ int,
 		mod float64,
 		max uint,
 		in int,
@@ -537,7 +537,7 @@ func Test_Scaler_Max(t *testing.T) {
 			initedMu := sync.Mutex{}
 			release := make(chan struct{})
 
-			interceptFunc := func(ctx context.Context, t int) (int, bool) {
+			interceptFunc := func(_ context.Context, t int) (int, bool) {
 				defer func() {
 					initedMu.Lock()
 					defer initedMu.Unlock()

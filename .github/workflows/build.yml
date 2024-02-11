@@ -1,4 +1,5 @@
 name: Lint, Build & Test
+id: lint-build-test
 
 on: [push, pull_request]
 

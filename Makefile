@@ -1,4 +1,8 @@
-all: build tidy lint fmt test
+all: deps tidy fmt build test lint
+
+op=op run --env-file="./.env" -- 
+
+opact=op run --env-file="./.env.act" -- 
 
 #-------------------------------------------------------------------------
 # Variables
@@ -16,6 +20,11 @@ deps:
 	$(pyenv)/pip install --upgrade pre-commit
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/goreleaser/goreleaser@latest
+
+ci-test-deps:
+	# install act
+	if [ ! -d .act ]; then make install-act; git clone git@github.com:nektos/act.git .act; fi
+	cd .act && git pull && sudo make install
 
 test: lint 
 	CGO_ENABLED=1 go test -cover -failfast -race ./...
@@ -46,7 +55,8 @@ lint: tidy
 build: update upgrade tidy lint test
 	$(env) go build ./...
 
-release-dev: build-ci
+release: build-ci
+	goreleaser release --snapshot --rm-dist
 
 upgrade:
 	$(pyenv)/pre-commit autoupdate
@@ -64,11 +74,31 @@ tidy: fmt
 clean: 
 	rm -rf dist
 	rm -rf coverage
+	rm -rf .act
+	rm -rf .venv
+
+#-------------------------------------------------------------------------
+# Git targets
+#-------------------------------------------------------------------------
+
+tag:
+	@latest_tag=$$(git describe --tags `git rev-list --tags --max-count=1`); \
+	current_major=$$(echo $$latest_tag | cut -d. -f1); \
+	current_minor=$$(echo $$latest_tag | cut -d. -f2); \
+	current_patch=$$(echo $$latest_tag | cut -d. -f3); \
+	next_minor=$$((current_minor + 1)); \
+	default_version="$$current_major.$$next_minor.$$current_patch"; \
+	read -p "Enter the version number [$$default_version]: " version; \
+	version=$${version:-$$default_version}; \
+	commits=$$(git log $$latest_tag..HEAD --pretty=format:"%h %s" | awk '{print "- " $$0}'); \
+	git tag -a v$$version -m "Release v$$version" -m "$$commits"; \
+	git push origin v$$version
 
 #-------------------------------------------------------------------------
 # CI targets
 #-------------------------------------------------------------------------
-test-ci: deps tidy lint
+build-ci:
+	$(env) go build ./...
 	CGO_ENABLED=1 go test \
 				-cover \
 				-covermode=atomic \
@@ -77,13 +107,19 @@ test-ci: deps tidy lint
 				-race ./...
 	make fuzz FUZZ_TIME=10
 
-build-ci: test-ci
-	$(env) go build ./...
-
-bench-ci: test-ci
+bench-ci: build-ci
 	go test -bench=. ./... | tee output.txt
 
 release-ci: build-ci	
+	goreleaser release --rm-dist
+
+test-ci: 
+	DOCKER_HOST=$(shell docker context inspect --format='{{json .Endpoints.docker.Host}}' $(shell docker context show)) \
+				$(opact) act \
+					-s GIT_CREDENTIALS \
+					-s GITHUB_TOKEN="$(gh auth token)" \
+					--var GO_VERSION \
+					--var ALERT_CC_USERS \
 
 #-------------------------------------------------------------------------
 # Force targets
@@ -95,4 +131,4 @@ FORCE:
 # Phony targets
 #-------------------------------------------------------------------------
 
-.PHONY: build test lint fuzz
+.PHONY: build test lint fuzz bench fmt tidy clean release update upgrade deps translate test-act ci-test-deps

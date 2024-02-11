@@ -1,6 +1,8 @@
 # Removing Vendor
 vendor/
 .venv
+dist/
+.act/
 
 .vscode/
 
