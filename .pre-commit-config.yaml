@@ -1,60 +1,46 @@
-exclude: '^package.json|package-lock.json|.*?\.tsv$'
+exclude: '^$'
 fail_fast: true 
 repos:
--   repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.14.1
+  -   repo: https://github.com/Yelp/detect-secrets
+      rev: v1.5.0
+      hooks:
+      -   id: detect-secrets
+          name: Detect secrets
+          language: python
+          entry: detect-secrets-hook
+          args: [
+            '--baseline', 
+            '.secrets.baseline',
+            '--exclude-files',
+            '(_test\.go$|/testdata/|gomod2nix.toml)',
+            ]
+  - repo: https://github.com/mrtazz/checkmake.git
+    rev: 0.2.2
     hooks:
-        - id: commitizen
-          stages: [commit-msg]
--   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    -   id: checkmake
+  -   repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+      -   id: check-json
+      -   id: check-merge-conflict
+      -   id: check-yaml
+      -   id: end-of-file-fixer
+      -   id: check-symlinks
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.12.0
     hooks:
-    -   id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: package.lock.json
-        stages: [commit]
--   repo: https://github.com/golangci/golangci-lint
-    rev: v1.55.2
+    -   id: markdownlint
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.31.0
     hooks:
-    -   id: golangci-lint
-        stages: [commit]
--   repo: https://github.com/Bahjat/pre-commit-golang
-    rev: v1.0.3 # pragma: allowlist secret
+      - id: commitizen
+      - id: commitizen-branch
+        stages: [push]
+  - repo: local
     hooks:
-      - id: go-unit-tests
-        stages: [commit]
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-    -   id: check-json
-        stages: [commit]
-      #-   id: no-commit-to-branch
-      #    args: ['--branch', 'main']
-      #    stages: [commit]
-    -   id: pretty-format-json
-        args: ['--autofix']
-        stages: [commit]
-    -   id: check-merge-conflict
-        stages: [commit]
-    -   id: check-yaml
-        stages: [commit]
--   repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.39.0
-    hooks:
-    -   id: markdownlint-fix
-        stages: [commit]
-        args: ["--ignore", "README.md"] # This is a generated file
--   repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
-    hooks:
-    -   id: shellcheck
-        stages: [commit]
--   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v9.0.0-alpha.2'
-    hooks:
-    -   id: eslint
-        stages: [commit]
--   repo: https://github.com/dnephin/pre-commit-golang
-    rev: 'v0.5.1'
-    hooks:
-      - id: go-mod-tidy
+      - id: makefile
+        name: Run Makefile Lint
+        entry: make
+        args: [pre-commit]
+        language: system
+        pass_filenames: false
