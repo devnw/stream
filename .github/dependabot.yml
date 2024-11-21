@@ -12,3 +12,33 @@ updates:
     interval: "daily"
   labels:
     - "automerge"
+- package-ecosystem: "docker"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  labels:
+    - "automerge"
+- package-ecosystem: "npm"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  labels:
+    - "automerge"
+- package-ecosystem: "pip"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  labels:
+    - "automerge"
+- package-ecosystem: "cargo"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  labels:
+    - "automerge"
+- package-ecosystem: "terraform"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  labels:
+    - "automerge"
