@@ -19,7 +19,7 @@ on:
   status: {}
 jobs:
   automerge:
-    runs-on: nixos
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write
