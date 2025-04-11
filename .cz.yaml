@@ -1,0 +1,48 @@
+commitizen:
+  name: cz_customize
+  customize:
+    message_template: "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
+    example: 'feature: this feature enable customize through config file'
+    schema: "<type>: <body>"
+    schema_pattern: "(feature|bug fix):(\\s.*)"
+    bump_pattern: "^(break|new|fix|hotfix)"
+    commit_parser: "^(?P<change_type>feature|bug fix):\\s(?P<message>.*)?"
+    changelog_pattern: "^(feature|bug fix)?(!)?"
+    change_type_map:
+      feature: Feat
+      bug fix: Fix
+    bump_map:
+      break: MAJOR
+      new: MINOR
+      fix: PATCH
+      hotfix: PATCH
+    change_type_order: ["BREAKING CHANGE", "feat", "fix", "refactor", "perf"]
+    info_path: cz_customize_info.txt
+    info: This is customized info
+    questions:
+    - type: list
+      name: change_type
+      choices:
+      - value: feat
+        name: 'feat: A new feature.'
+      - value: fix
+        name: 'fix: A bug fix.'
+      - value: refactor
+        name: 'refactor: A code change that neither fixes a bug nor adds a feature.'
+      - value: perf
+        name: 'perf: A code change that improves performance.'
+      - value: test
+        name: 'test: Adding missing tests or correcting existing tests.'
+      - value: docs
+        name: 'docs: Documentation only changes.'
+      - value: chore
+        name: 'chore: Changes that don''t modify src or test files.'
+      - value: cicd
+        name: 'cicd: Changes to CI/CD configuration files and scripts.'
+      message: Select the type of change you are committing
+    - type: input
+      name: message
+      message: Body.
+    - type: confirm
+      name: show_message
+      message: Do you want to add body message in commit?

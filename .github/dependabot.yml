@@ -1,44 +1,120 @@
 version: 2
 updates:
-- package-ecosystem: gomod
-  directory: "/"
-  schedule:
-    interval: daily
-  labels:
-    - "automerge"
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
-- package-ecosystem: "docker"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
-- package-ecosystem: "npm"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
-- package-ecosystem: "pip"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
-- package-ecosystem: "cargo"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
-- package-ecosystem: "terraform"
-  directory: "/"
-  schedule:
-    interval: "daily"
-  labels:
-    - "automerge"
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: daily
+    labels:
+      - "go"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "github-actions"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "docker-compose"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "docker"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "npm"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "python"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "rust"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "terraform"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "terraform"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "git"
+      - "submodule"
+      - "deps"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
